@@ -24,17 +24,16 @@
     <form id="loginForm">
       <input type="email" id="loginEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
       <input type="password" id="loginPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
-      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng nhập</button>
+      <button type="submit" id="loginBtn" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng nhập</button>
     </form>
 
     <!-- Register Form -->
-<form id="registerForm" class="hidden">
-  <input type="text" id="registerName" placeholder="Tên tài khoản" class="w-full mb-2 p-2 border rounded" required />
-  <input type="email" id="registerEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
-  <input type="password" id="registerPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
-  <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
-</form>
-
+    <form id="registerForm" class="hidden">
+      <input type="text" id="registerName" placeholder="Tên tài khoản" class="w-full mb-2 p-2 border rounded" required />
+      <input type="email" id="registerEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
+      <input type="password" id="registerPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
+      <button type="submit" id="registerBtn" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
+    </form>
 
     <!-- Message -->
     <p id="message" class="text-red-500 text-center mt-3"></p>
@@ -60,8 +59,10 @@
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const message = document.getElementById('message');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
 
-    // Tab switching
+    // Chuyển tab
     loginTab.addEventListener('click', () => {
       loginForm.classList.remove('hidden');
       registerForm.classList.add('hidden');
@@ -69,6 +70,7 @@
       loginTab.classList.remove('bg-gray-200', 'text-blue-500');
       registerTab.classList.add('bg-gray-200', 'text-blue-500');
       registerTab.classList.remove('bg-green-500', 'text-white');
+      message.textContent = '';
     });
 
     registerTab.addEventListener('click', () => {
@@ -78,13 +80,17 @@
       registerTab.classList.remove('bg-gray-200', 'text-blue-500');
       loginTab.classList.add('bg-gray-200', 'text-blue-500');
       loginTab.classList.remove('bg-blue-500', 'text-white');
+      message.textContent = '';
     });
 
-    // Handle login
+    // Đăng nhập
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
+
+      loginBtn.disabled = true;
+      message.textContent = 'Đang đăng nhập...';
 
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
@@ -108,45 +114,66 @@
               msg = 'Lỗi: ' + error.message;
           }
           message.textContent = msg;
+        })
+        .finally(() => {
+          loginBtn.disabled = false;
         });
     });
 
-    // Handle registration
-registerForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = document.getElementById('registerName').value;
-  const email = document.getElementById('registerEmail').value;
-  const password = document.getElementById('registerPassword').value;
+    // Đăng ký
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
 
-  auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      return userCredential.user.updateProfile({
-        displayName: name
-      });
-    })
-    .then(() => {
-      message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
-      registerForm.reset();
-      loginTab.click(); // switch to login tab
-    })
-    .catch((error) => {
-      let msg = '';
-      switch (error.code) {
-        case 'auth/invalid-email':
-          msg = 'Email không hợp lệ.';
-          break;
-        case 'auth/email-already-in-use':
-          msg = 'Email đã được đăng ký.';
-          break;
-        case 'auth/weak-password':
-          msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
-          break;
-        default:
-          msg = 'Lỗi: ' + error.message;
+      if (password.length < 6) {
+        message.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
+        return;
       }
-      message.textContent = msg;
+
+      registerBtn.disabled = true;
+      message.textContent = 'Đang đăng ký...';
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          return userCredential.user.updateProfile({
+            displayName: name
+          });
+        })
+        .then(() => {
+          message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
+          registerForm.reset();
+          loginTab.click(); // chuyển sang tab đăng nhập
+        })
+        .catch((error) => {
+          let msg = '';
+          switch (error.code) {
+            case 'auth/invalid-email':
+              msg = 'Email không hợp lệ.';
+              break;
+            case 'auth/email-already-in-use':
+              msg = 'Email đã được đăng ký.';
+              break;
+            case 'auth/weak-password':
+              msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
+              break;
+            default:
+              msg = 'Lỗi: ' + error.message;
+          }
+          message.textContent = msg;
+        })
+        .finally(() => {
+          registerBtn.disabled = false;
+        });
     });
-});
+
+    // Nếu đã đăng nhập → chuyển về trang chính
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        window.location.href = 'index.html';
+      }
+    });
   </script>
 </body>
 </html>
