@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LokTik - Đăng ảnh</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -24,14 +24,17 @@
 <body class="bg-gray-100 min-h-screen flex flex-col justify-between">
 
   <!-- Nội dung chính -->
-  <main class="flex-grow p-4">
-    <h2 class="text-xl font-bold mb-4 text-center">📤 Đăng ảnh mới</h2>
-
-    <input type="file" id="imageInput" accept="image/*" class="mb-4 w-full" />
-    <img id="preview" src="" class="mb-4 w-full max-h-96 object-cover rounded hidden" />
-    <button id="uploadBtn" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng ảnh</button>
-
-    <p id="status" class="text-center mt-4 text-sm text-gray-600"></p>
+  <main class="flex-grow flex items-center justify-center">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
+      <h2 class="text-xl font-bold mb-4">📤 Đăng ảnh</h2>
+      <form id="uploadForm">
+        <input type="file" id="photoInput" accept="image/*" class="mb-4 w-full" required />
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">
+          Tải lên
+        </button>
+      </form>
+      <p id="message" class="text-sm text-center mt-3 text-gray-700"></p>
+    </div>
   </main>
 
   <!-- Điều hướng -->
@@ -70,55 +73,54 @@
     const storage = firebase.storage();
     const db = firebase.firestore();
 
-    // Preview ảnh
-    const imageInput = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files[0];
-      if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.classList.remove('hidden');
+    const photoInput = document.getElementById("photoInput");
+    const uploadForm = document.getElementById("uploadForm");
+    const message = document.getElementById("message");
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
       }
     });
 
-    // Đăng ảnh
-    document.getElementById('uploadBtn').addEventListener('click', async () => {
-      const file = imageInput.files[0];
-      const status = document.getElementById('status');
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const file = photoInput.files[0];
       if (!file) {
-        alert("Vui lòng chọn ảnh!");
+        message.textContent = "❌ Vui lòng chọn ảnh!";
         return;
       }
 
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Bạn cần đăng nhập!");
-        window.location.href = "login.html";
-        return;
-      }
+      const storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
+      const uploadTask = storageRef.put(file);
 
-      const fileName = `${user.uid}_${Date.now()}.jpg`;
-      const storageRef = storage.ref().child("images/" + fileName);
-      status.textContent = "⏳ Đang tải ảnh lên...";
+      message.textContent = "⏳ Đang tải ảnh lên...";
 
-      try {
-        await storageRef.put(file);
-        const url = await storageRef.getDownloadURL();
+      uploadTask.on("state_changed", 
+        null,
+        (error) => {
+          message.textContent = "❌ Lỗi upload: " + error.message;
+        },
+        async () => {
+          const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+          const user = auth.currentUser;
 
-        await db.collection("posts").add({
-          url: url,
-          uid: user.uid,
-          email: user.email,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+          await db.collection("posts").add({
+            url: imageUrl,
+            uid: user.uid,
+            email: user.email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
 
-        status.textContent = "✅ Đăng ảnh thành công!";
-        imageInput.value = '';
-        preview.src = '';
-        preview.classList.add('hidden');
-      } catch (err) {
-        status.textContent = "❌ Lỗi khi đăng ảnh: " + err.message;
-      }
+          message.textContent = "✅ Đăng ảnh thành công!";
+          photoInput.value = "";
+
+          setTimeout(() => {
+            window.location.href = "feed.html";
+          }, 2000);
+        }
+      );
     });
 
     function goTo(page) {
