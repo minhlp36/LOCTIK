@@ -83,15 +83,12 @@
             const username = data.displayName || data.email || "Ẩn danh";
             const time = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleString("vi-VN") : "Vừa xong";
             const caption = data.caption || "";
-            const url = data.url || "";
+            const imageUrls = data.imageUrls || [];
             const avatar = data.avatarUrl || "https://www.gravatar.com/avatar?d=mp";
-
             const likeRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
             const commentRef = db.collection("posts").doc(postId).collection("comments");
-
             const likeSnap = await likeRef.get();
             const liked = likeSnap.exists;
-
             const likesSnap = await db.collection("posts").doc(postId).collection("likes").get();
             let likeCount = likesSnap.size;
 
@@ -103,7 +100,10 @@
                 <img src="${avatar}" class="w-8 h-8 rounded-full object-cover" />
                 <p class="text-sm text-gray-500">${username} • ${time}</p>
               </div>
-              ${url ? `<img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover transition-opacity duration-300 opacity-0" loading="lazy" onload="this.style.opacity='1'" />` : ""}
+              ${imageUrls.map(url => `
+  <img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover transition-opacity duration-300 opacity-0"
+    loading="lazy" onload="this.style.opacity='1'" />
+`).join("")}
               <p class="text-gray-800">${caption}</p>
               <button class="like-btn text-red-500">${liked ? "❤️" : "🤍"} ${likeCount}</button>
 
