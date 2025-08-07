@@ -1,3 +1,4 @@
+<!-- 🔧 Đã chuyển từ modular → compat SDK (tương thích với feed.html) -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,9 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Đăng bài - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen pb-24">
-
   <div class="max-w-md mx-auto mt-6 p-4 bg-white rounded shadow">
     <h1 class="text-2xl font-bold text-center mb-4">Đăng bài mới</h1>
     <form id="uploadForm" class="space-y-4">
@@ -19,7 +26,6 @@
     </form>
   </div>
 
-  <!-- Thanh điều hướng -->
   <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
     <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
       <span class="text-xl">🏠</span><span class="text-sm">Trang chủ</span>
@@ -35,15 +41,7 @@
     </a>
   </div>
 
-  <!-- Firebase v10 + Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import imageCompression from "https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.esm.js";
-
-    // Cấu hình Firebase
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
@@ -53,11 +51,10 @@
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
     };
 
-    // Khởi tạo Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const storage = getStorage(app);
-    const db = getFirestore(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
     const uploadForm = document.getElementById("uploadForm");
     const imageInput = document.getElementById("imageInput");
@@ -67,7 +64,7 @@
 
     let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "login.html";
       } else {
@@ -79,7 +76,7 @@
       e.preventDefault();
 
       const caption = captionInput.value.trim();
-      const files = Array.from(imageInput.files).slice(0, 5); // Tối đa 5 ảnh
+      const files = Array.from(imageInput.files).slice(0, 5);
 
       if (files.length === 0 && !caption) {
         message.className = "text-sm text-red-500 mt-2";
@@ -97,9 +94,7 @@
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
 
-          if (file.size > 5 * 1024 * 1024) {
-            throw new Error("Ảnh quá lớn. Giới hạn mỗi ảnh là 5MB.");
-          }
+          if (file.size > 5 * 1024 * 1024) throw new Error("Ảnh quá lớn. Giới hạn là 5MB.");
 
           const compressed = await imageCompression(file, {
             maxSizeMB: 1,
@@ -108,8 +103,8 @@
           });
 
           const filename = `posts/${Date.now()}_${compressed.name}`;
-          const imgRef = storageRef(storage, filename);
-          const uploadTask = uploadBytesResumable(imgRef, compressed);
+          const imgRef = storage.ref().child(filename);
+          const uploadTask = imgRef.put(compressed);
 
           await new Promise((resolve, reject) => {
             uploadTask.on(
@@ -120,7 +115,7 @@
               },
               reject,
               async () => {
-                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                const url = await imgRef.getDownloadURL();
                 imageUrls.push(url);
                 resolve();
               }
@@ -128,15 +123,14 @@
           });
         }
 
-        // Lưu bài đăng
-        await addDoc(collection(db, "posts"), {
+        await db.collection("posts").add({
           caption,
           imageUrls,
           uid: currentUser.uid,
           email: currentUser.email,
           displayName: currentUser.displayName || currentUser.email || "Ẩn danh",
           avatarUrl: currentUser.photoURL || "https://www.gravatar.com/avatar?d=mp",
-          createdAt: serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         message.className = "text-sm text-green-500 mt-2";
@@ -147,7 +141,6 @@
         submitBtn.textContent = "Đăng bài";
 
         setTimeout(() => window.location.href = "feed.html", 1000);
-
       } catch (err) {
         message.className = "text-sm text-red-500 mt-2";
         message.textContent = "❌ Lỗi: " + err.message;
