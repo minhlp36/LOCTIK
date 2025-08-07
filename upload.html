@@ -140,6 +140,8 @@
           }
 
           await addDoc(collection(db, "posts"), {
+            displayName: user.displayName,
+            avatarUrl: user.photoURL,
             uid: user.uid,
             text: content,
             imageUrls: uploadedImageUrls,
