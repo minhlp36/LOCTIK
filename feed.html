@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LokTik - Trang chủ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    .nav-btn {
+      @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
+    }
+    .nav-btn.active {
+      @apply text-blue-500 font-semibold;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Nội dung chính -->
+  <main class="flex-grow overflow-y-auto">
+    <div id="feedContainer" class="p-4 flex flex-col gap-4">
+      <!-- Ảnh sẽ được hiển thị ở đây -->
+      <p class="text-center text-gray-500">⏳ Đang tải ảnh...</p>
+    </div>
+  </main>
+
+  <!-- Điều hướng -->
+  <nav class="w-full bg-white border-t fixed bottom-0 left-0 flex justify-around py-2">
+    <button class="nav-btn active" onclick="goTo('feed.html')">
+      <span class="text-2xl">🏠</span>
+      <span>Trang chủ</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('upload.html')">
+      <span class="text-2xl">➕</span>
+      <span>Đăng</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('chat.html')">
+      <span class="text-2xl">💬</span>
+      <span>Nhắn tin</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('account.html')">
+      <span class="text-2xl">👤</span>
+      <span>Tài khoản</span>
+    </button>
+  </nav>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.appspot.com",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Kiểm tra đăng nhập
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        loadFeed();
+      }
+    });
+
+    // Load ảnh từ Firestore
+    function loadFeed() {
+      const feedContainer = document.getElementById('feedContainer');
+      feedContainer.innerHTML = ''; // Xoá loading
+
+      db.collection("posts").orderBy("createdAt", "desc").get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            feedContainer.innerHTML = '<p class="text-center text-gray-500">Chưa có bài đăng nào.</p>';
+            return;
+          }
+
+          snapshot.forEach(doc => {
+            const post = doc.data();
+            const img = document.createElement("img");
+            img.src = post.url;
+            img.className = "rounded shadow max-h-[80vh] w-full object-cover";
+            feedContainer.appendChild(img);
+          });
+        })
+        .catch(err => {
+          feedContainer.innerHTML = '<p class="text-center text-red-500">Lỗi khi tải ảnh: ' + err.message + '</p>';
+        });
+    }
+
+    function goTo(page) {
+      window.location.href = page;
+    }
+  </script>
+</body>
+</html>
