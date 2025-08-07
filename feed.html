@@ -80,7 +80,7 @@
           snapshot.forEach(async doc => {
             const data = doc.data();
             const postId = doc.id;
-            const email = data.email || "Người dùng";
+            const username = data.displayName || data.email || "Ẩn danh";
             const time = data.createdAt?.toDate().toLocaleString("vi-VN") || "Vừa xong";
             const caption = data.caption || "";
             const url = data.url || "";
@@ -100,7 +100,7 @@
             postEl.className = "bg-white p-4 rounded shadow space-y-2";
 
             postEl.innerHTML = `
-              <p class="text-sm text-gray-500">${email} • ${time}</p>
+              <p class="text-sm text-gray-500">${username} • ${time}</p>
               ${url ? `<img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover" />` : ""}
               <p class="text-gray-800">${caption}</p>
               <button class="like-btn text-red-500">${liked ? "❤️" : "🤍"} ${likeCount}</button>
