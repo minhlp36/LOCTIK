@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bạn bè - LokTik</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+
+  <h1 class="text-2xl font-bold mb-4">Tìm bạn bè</h1>
+
+  <input id="searchEmail" type="email" placeholder="Nhập email..." class="border p-2 rounded w-full mb-2">
+  <button id="searchBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Tìm kiếm</button>
+
+  <div id="searchResult" class="mt-4"></div>
+
+  <h2 class="text-xl font-bold mt-8 mb-2">Lời mời kết bạn đến</h2>
+  <div id="friendRequestsList" class="space-y-2"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.appspot.com",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
+      measurementId: "G-S6HQ3HN7W3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const searchInput = document.getElementById("searchEmail");
+    const searchBtn = document.getElementById("searchBtn");
+    const searchResult = document.getElementById("searchResult");
+    const friendRequestsList = document.getElementById("friendRequestsList");
+
+    let currentUser;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        loadFriendRequests();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    searchBtn.addEventListener("click", async () => {
+      const email = searchInput.value.trim();
+      searchResult.innerHTML = "Đang tìm...";
+
+      const q = query(collection(db, "users"), where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        searchResult.innerHTML = "Không tìm thấy người dùng nào.";
+        return;
+      }
+
+      const userDoc = querySnapshot.docs[0];
+      const data = userDoc.data();
+
+      if (userDoc.id === currentUser.uid) {
+        searchResult.innerHTML = "Không thể gửi lời mời kết bạn cho chính mình.";
+        return;
+      }
+
+      // Kiểm tra đã là bạn bè chưa
+      const friendRef = doc(db, `friends/${currentUser.uid}/list`, userDoc.id);
+      const friendSnap = await getDoc(friendRef);
+      if (friendSnap.exists()) {
+        searchResult.innerHTML = "Người dùng này đã là bạn bè.";
+        return;
+      }
+
+      // Kiểm tra đã gửi lời mời chưa
+      const sentRequestRef = doc(db, `friendRequests/${currentUser.uid}/sent`, userDoc.id);
+      const sentSnap = await getDoc(sentRequestRef);
+      if (sentSnap.exists()) {
+        searchResult.innerHTML = "Bạn đã gửi lời mời kết bạn.";
+        return;
+      }
+
+      // Hiển thị nút kết bạn
+      searchResult.innerHTML = `
+        <div class="bg-white p-4 rounded shadow">
+          <p class="font-semibold">${data.email}</p>
+          <button class="bg-green-500 text-white px-4 py-2 rounded mt-2" id="addFriendBtn">Kết bạn</button>
+        </div>
+      `;
+
+      document.getElementById("addFriendBtn").addEventListener("click", async () => {
+        // Lưu vào 2 collection: gửi và nhận
+        await setDoc(doc(db, `friendRequests/${userDoc.id}/requests`, currentUser.uid), {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          createdAt: Date.now()
+        });
+        await setDoc(doc(db, `friendRequests/${currentUser.uid}/sent`, userDoc.id), {
+          uid: userDoc.id,
+          email: data.email,
+          createdAt: Date.now()
+        });
+        searchResult.innerHTML = "Đã gửi lời mời kết bạn.";
+      });
+    });
+
+    function loadFriendRequests() {
+      const q = collection(db, `friendRequests/${currentUser.uid}/requests`);
+      onSnapshot(q, (snapshot) => {
+        friendRequestsList.innerHTML = "";
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const item = document.createElement("div");
+          item.className = "bg-white p-4 rounded shadow flex justify-between items-center";
+          item.innerHTML = `
+            <div>
+              <p class="font-semibold">${data.email}</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="accept-btn bg-blue-500 text-white px-3 py-1 rounded" data-uid="${data.uid}" data-email="${data.email}">Chấp nhận</button>
+              <button class="decline-btn bg-red-500 text-white px-3 py-1 rounded" data-uid="${data.uid}">Từ chối</button>
+            </div>
+          `;
+          friendRequestsList.appendChild(item);
+        });
+
+        document.querySelectorAll(".accept-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const fromUid = btn.dataset.uid;
+            const fromEmail = btn.dataset.email;
+
+            // Lưu bạn bè 2 chiều
+            await setDoc(doc(db, `friends/${currentUser.uid}/list`, fromUid), {
+              uid: fromUid,
+              email: fromEmail
+            });
+            await setDoc(doc(db, `friends/${fromUid}/list`, currentUser.uid), {
+              uid: currentUser.uid,
+              email: currentUser.email
+            });
+
+            // Xoá lời mời
+            await deleteDoc(doc(db, `friendRequests/${currentUser.uid}/requests`, fromUid));
+            await deleteDoc(doc(db, `friendRequests/${fromUid}/sent`, currentUser.uid));
+          });
+        });
+
+        document.querySelectorAll(".decline-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const fromUid = btn.dataset.uid;
+            await deleteDoc(doc(db, `friendRequests/${currentUser.uid}/requests`, fromUid));
+            await deleteDoc(doc(db, `friendRequests/${fromUid}/sent`, currentUser.uid));
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
