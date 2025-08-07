@@ -149,6 +149,157 @@
       if (accept) loadFriends();
     }
 
+    <!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tin nhắn - LokTik</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen pb-24">
+
+  <div class="max-w-md mx-auto p-4">
+    <h1 class="text-xl font-bold mb-4 text-center">💬 Tin nhắn</h1>
+
+    <!-- Tabs -->
+    <div class="flex justify-around mb-4">
+      <button onclick="showTab('friendsTab')" class="tab-btn text-blue-600 font-medium">🧑‍🤝‍🧑 Bạn bè</button>
+      <button onclick="showTab('requestsTab')" class="tab-btn text-gray-600">📥 Lời mời</button>
+      <button onclick="showTab('searchTab')" class="tab-btn text-gray-600">🔍 Tìm bạn</button>
+    </div>
+
+    <!-- Tab content -->
+    <div id="friendsTab" class="tab-content space-y-3"></div>
+    <div id="requestsTab" class="tab-content hidden space-y-3"></div>
+    <div id="searchTab" class="tab-content hidden space-y-3">
+      <input type="text" id="searchInput" placeholder="Nhập email người dùng..." class="w-full p-2 border rounded" />
+      <button onclick="searchUser()" class="w-full bg-blue-500 text-white py-2 rounded mt-2">Tìm & Gửi lời mời</button>
+      <div id="searchResult"></div>
+    </div>
+  </div>
+
+  <!-- Thanh điều hướng -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
+    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-xl">🏠</span><span class="text-sm">Trang chủ</span>
+    </a>
+    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-xl">➕</span><span class="text-sm">Đăng</span>
+    </a>
+    <a href="chat.html" class="flex flex-col items-center text-blue-600">
+      <span class="text-xl">💬</span><span class="text-sm">Tin nhắn</span>
+    </a>
+    <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+      <span class="text-xl">👤</span><span class="text-sm">Tài khoản</span>
+    </a>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.appspot.com",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return location.href = "login.html";
+      currentUser = user;
+      loadFriends();
+      loadRequests();
+    });
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('text-blue-600'));
+      event.target.classList.add('text-blue-600');
+    }
+
+    async function loadFriends() {
+      const friendsTab = document.getElementById("friendsTab");
+      friendsTab.innerHTML = "🔄 Đang tải...";
+
+      const querySnap = await db.collection("friendRequests")
+        .where("status", "==", "accepted")
+        .where("users", "array-contains", currentUser.uid)
+        .get();
+
+      if (querySnap.empty) {
+        friendsTab.innerHTML = `<p class="text-gray-600 text-center">Chưa có bạn nào.</p>`;
+        return;
+      }
+
+      friendsTab.innerHTML = "";
+      for (const doc of querySnap.docs) {
+        const data = doc.data();
+        const otherUID = data.users.find(uid => uid !== currentUser.uid);
+        const userSnap = await db.collection("users").doc(otherUID).get();
+        const user = userSnap.data();
+        friendsTab.innerHTML += `
+          <a href="chat-room.html?id=${doc.id}" class="flex items-center gap-3 bg-white p-3 rounded shadow hover:bg-gray-100">
+            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
+            <span class="text-gray-800 font-medium">${user.displayName || user.email}</span>
+          </a>
+        `;
+      }
+    }
+
+    async function loadRequests() {
+      const requestsTab = document.getElementById("requestsTab");
+      requestsTab.innerHTML = "🔄 Đang tải...";
+
+      const snap = await db.collection("friendRequests")
+        .where("to", "==", currentUser.uid)
+        .where("status", "==", "pending")
+        .get();
+
+      if (snap.empty) {
+        requestsTab.innerHTML = `<p class="text-gray-600 text-center">Không có lời mời nào.</p>`;
+        return;
+      }
+
+      requestsTab.innerHTML = "";
+      for (const doc of snap.docs) {
+        const data = doc.data();
+        const fromSnap = await db.collection("users").doc(data.from).get();
+        const user = fromSnap.data();
+
+        const container = document.createElement("div");
+        container.className = "bg-white p-3 rounded shadow flex items-center justify-between";
+
+        container.innerHTML = `
+          <div class="flex items-center gap-3">
+            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
+            <span>${user.displayName || user.email}</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="respondRequest('${doc.id}', true)" class="text-green-600">✔️</button>
+            <button onclick="respondRequest('${doc.id}', false)" class="text-red-600">❌</button>
+          </div>
+        `;
+        requestsTab.appendChild(container);
+      }
+    }
+
+    async function respondRequest(requestId, accept) {
+      const ref = db.collection("friendRequests").doc(requestId);
+      await ref.update({ status: accept ? "accepted" : "declined" });
+      loadRequests();
+      if (accept) loadFriends();
+    }
+
     async function searchUser() {
       const email = document.getElementById("searchInput").value.trim();
       const result = document.getElementById("searchResult");
@@ -208,3 +359,5 @@
   </script>
 </body>
 </html>
+
+  
