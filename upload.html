@@ -12,6 +12,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
+  <!-- Thư viện nén ảnh -->
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
   <style>
     .nav-btn {
       @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
@@ -92,35 +95,52 @@
         return;
       }
 
-      const storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
-      const uploadTask = storageRef.put(file);
+      try {
+        message.textContent = "⏳ Đang nén ảnh...";
+        // Nén ảnh (dưới 1MB và resize nếu cần)
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1080,
+          useWebWorker: true
+        };
+        const compressedFile = await imageCompression(file, options);
 
-      message.textContent = "⏳ Đang tải ảnh lên...";
+        const fileName = Date.now() + "_" + compressedFile.name;
+        const storageRef = storage.ref("images/" + fileName);
+        const uploadTask = storageRef.put(compressedFile);
 
-      uploadTask.on("state_changed", 
-        null,
-        (error) => {
-          message.textContent = "❌ Lỗi upload: " + error.message;
-        },
-        async () => {
-          const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
-          const user = auth.currentUser;
+        // Hiển thị tiến trình %
+        uploadTask.on("state_changed", 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            message.textContent = `⏳ Đang tải ảnh... ${Math.round(progress)}%`;
+          },
+          (error) => {
+            message.textContent = "❌ Lỗi upload: " + error.message;
+          },
+          async () => {
+            const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+            const user = auth.currentUser;
 
-          await db.collection("posts").add({
-            url: imageUrl,
-            uid: user.uid,
-            email: user.email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+            await db.collection("posts").add({
+              url: imageUrl,
+              uid: user.uid,
+              email: user.email,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-          message.textContent = "✅ Đăng ảnh thành công!";
-          photoInput.value = "";
+            message.textContent = "✅ Đăng ảnh thành công!";
+            photoInput.value = "";
 
-          setTimeout(() => {
-            window.location.href = "feed.html";
-          }, 2000);
-        }
-      );
+            setTimeout(() => {
+              window.location.href = "feed.html";
+            }, 2000);
+          }
+        );
+
+      } catch (err) {
+        message.textContent = "❌ Lỗi xử lý ảnh: " + err.message;
+      }
     });
 
     function goTo(page) {
