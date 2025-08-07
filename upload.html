@@ -16,7 +16,7 @@
   <div class="max-w-md w-full mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
     <h1 class="text-2xl font-semibold mb-4 text-center">Đăng bài mới</h1>
     <form id="uploadForm" class="space-y-4">
-      <input type="file" id="imageInput" accept="image/*" required class="w-full border p-2 rounded" />
+      <input type="file" id="imageInput" accept="image/*" class="w-full border p-2 rounded" />
       <textarea id="captionInput" rows="3" placeholder="Viết chú thích..." class="w-full border p-2 rounded"></textarea>
       <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">Đăng bài</button>
     </form>
@@ -79,15 +79,9 @@
       const file = imageInput.files[0];
       const caption = captionInput.value.trim();
 
-      if (!file) {
+      if (!file && !caption) {
         message.className = "text-sm text-red-500 mt-3";
-        message.textContent = "❌ Vui lòng chọn ảnh.";
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        message.className = "text-sm text-red-500 mt-3";
-        message.textContent = "❌ Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.";
+        message.textContent = "❌ Vui lòng nhập chú thích hoặc chọn ảnh.";
         return;
       }
 
@@ -95,53 +89,47 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "⏳ Đang đăng...";
       message.className = "text-sm text-blue-500 mt-3";
-      message.textContent = "⏳ Đang tải ảnh...";
+      message.textContent = file ? "⏳ Đang tải ảnh..." : "⏳ Đang đăng bài...";
 
       try {
-        const compressedFile = await imageCompression(file, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1024,
-          useWebWorker: true
+        let imageUrl = "";
+
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            throw new Error("Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+          }
+
+          const compressedFile = await imageCompression(file, {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1024,
+            useWebWorker: true
+          });
+
+          const storageRef = storage.ref().child("posts/" + Date.now() + "_" + compressedFile.name);
+          const uploadTaskSnapshot = await storageRef.put(compressedFile);
+
+          imageUrl = await uploadTaskSnapshot.ref.getDownloadURL();
+        }
+
+        await db.collection("posts").add({
+          imageUrl: imageUrl || "", // Dù không có ảnh vẫn thêm field
+          caption,
+          email: currentUser.email,
+          uid: currentUser.uid,
+          displayName: currentUser.displayName || currentUser.email || "Ẩn danh",
+          avatarUrl: currentUser.photoURL || "https://www.gravatar.com/avatar?d=mp",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        const storageRef = storage.ref().child("posts/" + Date.now() + "_" + compressedFile.name);
-        const uploadTask = storageRef.put(compressedFile);
-
-        uploadTask.on("state_changed",
-          (snapshot) => {
-            const percent = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            progressContainer.innerHTML = `Đang tải lên: ${percent}%`;
-          },
-          (error) => {
-            message.className = "text-sm text-red-500 mt-3";
-            message.textContent = "❌ Lỗi tải ảnh: " + error.message;
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Đăng bài";
-          },
-          async () => {
-  const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-  await db.collection("posts").add({
-    imageUrl: downloadURL,
-    caption,
-    email: currentUser.email,
-    uid: currentUser.uid,
-    displayName: currentUser.displayName || currentUser.email || "Ẩn danh",
-    avatarUrl: currentUser.photoURL || "https://www.gravatar.com/avatar?d=mp",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-};
-
-            message.className = "text-sm text-green-500 mt-3";
-            message.textContent = "✅ Đăng bài thành công!";
-            progressContainer.innerHTML = "";
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Đăng bài";
-            uploadForm.reset();
-            setTimeout(() => {
-              window.location.href = "feed.html";
-            }, 1000);
-          }
-        );
+        message.className = "text-sm text-green-500 mt-3";
+        message.textContent = "✅ Đăng bài thành công!";
+        progressContainer.innerHTML = "";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Đăng bài";
+        uploadForm.reset();
+        setTimeout(() => {
+          window.location.href = "feed.html";
+        }, 1000);
       } catch (err) {
         message.className = "text-sm text-red-500 mt-3";
         message.textContent = "❌ Lỗi: " + err.message;
