@@ -60,15 +60,14 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
     const postList = document.getElementById("postList");
 
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+      if (!user) return (window.location.href = "login.html");
+      loadPosts(user);
+    });
 
+    function loadPosts(currentUser) {
       db.collection("posts")
         .orderBy("createdAt", "desc")
         .onSnapshot(snapshot => {
@@ -78,23 +77,88 @@
             return;
           }
 
-          snapshot.forEach(doc => {
+          snapshot.forEach(async doc => {
             const data = doc.data();
-            const img = data.url ? `<img src="${data.url}" class="rounded mb-2" />` : "";
-            const caption = data.caption || "";
+            const postId = doc.id;
             const email = data.email || "Người dùng";
             const time = data.createdAt?.toDate().toLocaleString("vi-VN") || "Vừa xong";
+            const caption = data.caption || "";
+            const url = data.url || "";
+            const likeRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
+            const commentRef = db.collection("posts").doc(postId).collection("comments");
 
-            postList.innerHTML += `
-              <div class="bg-white p-4 rounded shadow">
-                <p class="text-sm text-gray-500 mb-2">${email} - ${time}</p>
-                ${img}
-                <p class="text-gray-800">${caption}</p>
+            // Kiểm tra đã like chưa
+            const likeSnap = await likeRef.get();
+            const liked = likeSnap.exists;
+
+            // Đếm số like
+            const likesSnap = await db.collection("posts").doc(postId).collection("likes").get();
+            const likeCount = likesSnap.size;
+
+            // Tạo HTML
+            const postEl = document.createElement("div");
+            postEl.className = "bg-white p-4 rounded shadow space-y-2";
+
+            postEl.innerHTML = `
+              <p class="text-sm text-gray-500">${email} • ${time}</p>
+              ${url ? `<img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover" />` : ""}
+              <p class="text-gray-800">${caption}</p>
+              <button class="like-btn text-red-500">${liked ? "❤️" : "🤍"} ${likeCount}</button>
+
+              <div class="mt-3">
+                <form class="comment-form flex gap-2">
+                  <input type="text" placeholder="Bình luận..." class="flex-1 p-2 border rounded" />
+                  <button type="submit" class="bg-blue-500 text-white px-3 rounded">Gửi</button>
+                </form>
+                <div class="comment-list mt-2 text-sm text-gray-700 space-y-1">
+                  <p class="text-gray-400 italic">⏳ Đang tải bình luận...</p>
+                </div>
               </div>
             `;
+
+            postList.appendChild(postEl);
+
+            // Like handler
+            const likeBtn = postEl.querySelector(".like-btn");
+            likeBtn.addEventListener("click", async () => {
+              const docRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
+              const snapshot = await docRef.get();
+              if (!snapshot.exists) {
+                await docRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
+              }
+            });
+
+            // Load comments
+            const commentList = postEl.querySelector(".comment-list");
+            commentRef.orderBy("createdAt").onSnapshot(commentsSnap => {
+              commentList.innerHTML = "";
+              commentsSnap.forEach(c => {
+                const cData = c.data();
+                const cTime = cData.createdAt?.toDate().toLocaleTimeString("vi-VN") || "";
+                commentList.innerHTML += `<p><strong>${cData.email}</strong>: ${cData.text} <span class="text-xs text-gray-400">(${cTime})</span></p>`;
+              });
+              if (commentList.innerHTML === "") {
+                commentList.innerHTML = "<p class='text-gray-400 italic'>Chưa có bình luận.</p>";
+              }
+            });
+
+            // Gửi bình luận
+            const commentForm = postEl.querySelector(".comment-form");
+            const commentInput = commentForm.querySelector("input");
+            commentForm.addEventListener("submit", async (e) => {
+              e.preventDefault();
+              const text = commentInput.value.trim();
+              if (!text) return;
+              await commentRef.add({
+                text: text,
+                email: currentUser.email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              commentInput.value = "";
+            });
           });
         });
-    });
+    }
 
     function goTo(page) {
       window.location.href = page;
