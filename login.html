@@ -28,11 +28,13 @@
     </form>
 
     <!-- Register Form -->
-    <form id="registerForm" class="hidden">
-      <input type="email" id="registerEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
-      <input type="password" id="registerPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
-      <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
-    </form>
+<form id="registerForm" class="hidden">
+  <input type="text" id="registerName" placeholder="Tên tài khoản" class="w-full mb-2 p-2 border rounded" required />
+  <input type="email" id="registerEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
+  <input type="password" id="registerPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
+  <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
+</form>
+
 
     <!-- Message -->
     <p id="message" class="text-red-500 text-center mt-3"></p>
@@ -110,34 +112,42 @@
     });
 
     // Handle registration
-    registerForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('registerEmail').value;
-      const password = document.getElementById('registerPassword').value;
+registerForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('registerName').value;
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
-          registerForm.reset();
-          loginTab.click(); // switch back to login tab
-        })
-        .catch((error) => {
-          let msg = '';
-          switch (error.code) {
-            case 'auth/invalid-email':
-              msg = 'Email không hợp lệ.';
-              break;
-            case 'auth/email-already-in-use':
-              msg = 'Email đã được đăng ký.';
-              break;
-            case 'auth/weak-password':
-              msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
-              break;
-            default:
-              msg = 'Lỗi: ' + error.message;
-          }
-          message.textContent = msg;
-        });
+  auth.createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      return userCredential.user.updateProfile({
+        displayName: name
+      });
+    })
+    .then(() => {
+      message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
+      registerForm.reset();
+      loginTab.click(); // switch to login tab
+    })
+    .catch((error) => {
+      let msg = '';
+      switch (error.code) {
+        case 'auth/invalid-email':
+          msg = 'Email không hợp lệ.';
+          break;
+        case 'auth/email-already-in-use':
+          msg = 'Email đã được đăng ký.';
+          break;
+        case 'auth/weak-password':
+          msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
+          break;
+        default:
+          msg = 'Lỗi: ' + error.message;
+      }
+      message.textContent = msg;
+    });
+});
+
     });
   </script>
 </body>
