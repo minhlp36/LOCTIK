@@ -91,7 +91,7 @@
 
         const username = data.displayName || data.email || "Ẩn danh";
         const time = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleString("vi-VN") : "Vừa xong";
-        const caption = data.caption || "";
+        const caption = data.text || data.caption || "";
         const imageUrls = data.imageUrls || [];
         const avatar = data.avatarUrl || "https://www.gravatar.com/avatar?d=mp";
 
