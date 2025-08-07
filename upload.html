@@ -26,25 +26,29 @@
     <button id="uploadBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">Đăng bài</button>
   </div>
 
-  <!-- Thanh điều hướng -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-    <a href="feed.html" class="text-center">
-      <div>🏠</div>
-      <div class="text-xs">Trang chủ</div>
+  <!-- Điều hướng -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around py-2">
+    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">🏠</span>
+      <span class="text-sm">Trang chủ</span>
     </a>
-    <a href="upload.html" class="text-center">
-      <div>➕</div>
-      <div class="text-xs">Đăng</div>
+    <a href="upload.html" class="flex flex-col items-center text-blue-500 font-bold">
+      <span class="text-xl">➕</span>
+      <span class="text-sm">Đăng</span>
     </a>
-    <a href="chat.html" class="text-center">
-      <div>💬</div>
-      <div class="text-xs">Chat</div>
+    <a href="chat.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">💬</span>
+      <span class="text-sm">Tin nhắn</span>
     </a>
-    <a href="account.html" class="text-center">
-      <div>👤</div>
-      <div class="text-xs">Tôi</div>
+    <a href="friends.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">✌🏻</span>
+      <span class="text-sm">Bạn bè</span>
     </a>
-  </div>
+    <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">👤</span>
+      <span class="text-sm">Tài khoản</span>
+    </a>
+  </nav>
 
   <script type="module">
     // Firebase cấu hình
