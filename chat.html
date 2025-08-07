@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LokTik - Nhắn tin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="p-4">
+    <h1 class="text-xl font-bold mb-4">💬 Bạn bè</h1>
+    <ul id="userList" class="space-y-2"></ul>
+  </div>
+
+  <script>
+    // Cấu hình Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.appspot.com",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const userList = document.getElementById("userList");
+
+    auth.onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) return window.location.href = "login.html";
+
+      const currentUid = currentUser.uid;
+
+      // Lấy danh sách bạn bè
+      const friendsSnap = await db.collection("friends")
+        .doc(currentUid).collection("list").get();
+
+      const friendIds = friendsSnap.docs.map(doc => doc.id);
+
+      // Lấy danh sách người dùng là bạn bè
+      const usersSnap = await db.collection("users").get();
+      usersSnap.forEach(doc => {
+        const uid = doc.id;
+        const data = doc.data();
+
+        if (uid !== currentUid && friendIds.includes(uid)) {
+          const li = document.createElement("li");
+          li.className = "bg-white p-4 rounded shadow hover:bg-blue-50 cursor-pointer";
+          li.textContent = data.email || "Không tên";
+          li.addEventListener("click", () => openChat(currentUid, uid));
+          userList.appendChild(li);
+        }
+      });
+    });
+
+    // Mở phòng chat riêng
+    function openChat(uid1, uid2) {
+      const sorted = [uid1, uid2].sort(); // đảm bảo ID luôn giống nhau
+      const chatId = sorted.join("_");
+      window.location.href = `chatroom.html?id=${chatId}`;
+    }
+  </script>
+</body>
+</html>

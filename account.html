@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LokTik - Tài khoản</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+  <h1 class="text-2xl font-bold mb-4">👤 Tài khoản của tôi</h1>
+
+  <!-- Tabs -->
+  <div class="flex space-x-2 mb-4">
+    <button onclick="showTab('info')" class="tab-btn bg-blue-500 text-white px-3 py-1 rounded">Thông tin</button>
+    <button onclick="showTab('posts')" class="tab-btn bg-gray-200 text-gray-700 px-3 py-1 rounded">Bài viết</button>
+    <button onclick="showTab('friends')" class="tab-btn bg-gray-200 text-gray-700 px-3 py-1 rounded">Bạn bè</button>
+  </div>
+
+  <!-- Thông tin cá nhân -->
+  <div id="tab-info" class="tab">
+    <p><strong>Email:</strong> <span id="emailInfo"></span></p>
+    <p><strong>User ID:</strong> <span id="uidInfo"></span></p>
+    <p><strong>Ngày tạo:</strong> <span id="createdAtInfo"></span></p>
+  </div>
+
+  <!-- Bài viết của tôi -->
+  <div id="tab-posts" class="tab hidden">
+    <div id="myPosts" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+  </div>
+
+  <!-- Bạn bè -->
+  <div id="tab-friends" class="tab hidden space-y-4">
+    <div>
+      <h2 class="font-semibold mb-2">🔍 Tìm bạn</h2>
+      <ul id="userList" class="space-y-2"></ul>
+    </div>
+
+    <div>
+      <h2 class="font-semibold mb-2">📬 Lời mời kết bạn</h2>
+      <ul id="requestsList" class="space-y-2"></ul>
+    </div>
+
+    <div>
+      <h2 class="font-semibold mb-2">✅ Bạn bè</h2>
+      <ul id="friendsList" class="space-y-2"></ul>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.appspot.com",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    let currentUser;
+
+    // Tab chuyển đổi
+    function showTab(tab) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-blue-500", "text-white"));
+      document.getElementById(`tab-${tab}`).classList.remove("hidden");
+      event.target.classList.add("bg-blue-500", "text-white");
+    }
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return window.location.href = "login.html";
+      currentUser = user;
+
+      // Thông tin cá nhân
+      document.getElementById("emailInfo").textContent = user.email;
+      document.getElementById("uidInfo").textContent = user.uid;
+      document.getElementById("createdAtInfo").textContent = new Date(user.metadata.creationTime).toLocaleString();
+
+      loadMyPosts();
+      loadUsers();
+      loadFriendRequests();
+      loadFriends();
+    });
+
+    // Load bài viết của tôi
+    async function loadMyPosts() {
+      const container = document.getElementById("myPosts");
+      container.innerHTML = "";
+      const snap = await db.collection("posts").where("uid", "==", currentUser.uid).orderBy("createdAt", "desc").get();
+      snap.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "bg-white p-3 rounded shadow";
+
+        div.innerHTML = `
+          <img src="${data.imageUrl}" class="w-full rounded mb-2"/>
+          <p class="mb-2">${data.caption || ""}</p>
+          <button onclick="deletePost('${doc.id}', '${data.imagePath}')" class="text-red-500 hover:underline">🗑️ Xoá</button>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    // Xoá bài viết
+    async function deletePost(postId, imagePath) {
+      if (confirm("Bạn có chắc muốn xoá bài này không?")) {
+        await db.collection("posts").doc(postId).delete();
+        if (imagePath) {
+          await storage.ref(imagePath).delete();
+        }
+        loadMyPosts();
+      }
+    }
+
+    // Load danh sách người dùng để tìm bạn
+    async function loadUsers() {
+      const userList = document.getElementById("userList");
+      userList.innerHTML = "";
+
+      const usersSnap = await db.collection("users").get();
+      const friendSnap = await db.collection("friends").doc(currentUser.uid).collection("list").get();
+      const currentFriends = friendSnap.docs.map(doc => doc.id);
+
+      const sentRequestsSnap = await db.collection("friendRequests").doc(currentUser.uid).collection("sent").get();
+      const sentRequestIds = sentRequestsSnap.docs.map(doc => doc.id);
+
+      usersSnap.forEach(doc => {
+        const uid = doc.id;
+        if (uid === currentUser.uid || currentFriends.includes(uid)) return;
+
+        const li = document.createElement("li");
+        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
+        li.textContent = doc.data().email;
+
+        if (sentRequestIds.includes(uid)) {
+          li.innerHTML += "<span class='text-sm text-gray-400'>(Đã gửi)</span>";
+        } else {
+          const btn = document.createElement("button");
+          btn.className = "text-blue-500 hover:underline text-sm";
+          btn.textContent = "Kết bạn";
+          btn.onclick = async () => {
+            await db.collection("friendRequests").doc(uid).collection("requests").doc(currentUser.uid).set({ timestamp: Date.now() });
+            await db.collection("friendRequests").doc(currentUser.uid).collection("sent").doc(uid).set({ timestamp: Date.now() });
+            loadUsers();
+          };
+          li.appendChild(btn);
+        }
+
+        userList.appendChild(li);
+      });
+    }
+
+    // Load lời mời kết bạn
+    async function loadFriendRequests() {
+      const list = document.getElementById("requestsList");
+      list.innerHTML = "";
+      const snap = await db.collection("friendRequests").doc(currentUser.uid).collection("requests").get();
+
+      snap.forEach(doc => {
+        const uid = doc.id;
+        const li = document.createElement("li");
+        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
+        li.textContent = uid;
+
+        const acceptBtn = document.createElement("button");
+        acceptBtn.textContent = "Chấp nhận";
+        acceptBtn.className = "text-green-600 mr-2 hover:underline text-sm";
+        acceptBtn.onclick = async () => {
+          await db.collection("friends").doc(currentUser.uid).collection("list").doc(uid).set({ createdAt: Date.now() });
+          await db.collection("friends").doc(uid).collection("list").doc(currentUser.uid).set({ createdAt: Date.now() });
+          await db.collection("friendRequests").doc(currentUser.uid).collection("requests").doc(uid).delete();
+          await db.collection("friendRequests").doc(uid).collection("sent").doc(currentUser.uid).delete();
+          loadFriendRequests();
+          loadFriends();
+          loadUsers();
+        };
+
+        const rejectBtn = document.createElement("button");
+        rejectBtn.textContent = "Xoá";
+        rejectBtn.className = "text-red-500 hover:underline text-sm";
+        rejectBtn.onclick = async () => {
+          await db.collection("friendRequests").doc(currentUser.uid).collection("requests").doc(uid).delete();
+          await db.collection("friendRequests").doc(uid).collection("sent").doc(currentUser.uid).delete();
+          loadFriendRequests();
+        };
+
+        li.appendChild(acceptBtn);
+        li.appendChild(rejectBtn);
+        list.appendChild(li);
+      });
+    }
+
+    // Load bạn bè hiện tại
+    async function loadFriends() {
+      const list = document.getElementById("friendsList");
+      list.innerHTML = "";
+      const snap = await db.collection("friends").doc(currentUser.uid).collection("list").get();
+
+      snap.forEach(doc => {
+        const uid = doc.id;
+        const li = document.createElement("li");
+        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
+        li.textContent = uid;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Huỷ";
+        removeBtn.className = "text-red-500 hover:underline text-sm";
+        removeBtn.onclick = async () => {
+          await db.collection("friends").doc(currentUser.uid).collection("list").doc(uid).delete();
+          await db.collection("friends").doc(uid).collection("list").doc(currentUser.uid).delete();
+          loadFriends();
+          loadUsers();
+        };
+
+        li.appendChild(removeBtn);
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
