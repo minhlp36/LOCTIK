@@ -181,9 +181,7 @@
           if (commentSnap.empty) {
             commentList.innerHTML = `<p class="text-gray-400 italic">Chưa có bình luận nào.</p>`;
           } else {
-            let count = 0;
-commentSnap.forEach(cmtDoc => {
-  if (count >= 3) return; // chỉ hiển thị 3 bình luận
+            commentSnap.forEach(cmtDoc => {
   const cmt = cmtDoc.data();
 
   const createdAt = cmt.createdAt?.toDate?.();
@@ -199,9 +197,7 @@ commentSnap.forEach(cmtDoc => {
     <div class="text-gray-800 text-sm">${cmt.text}</div>
   `;
   commentList.appendChild(cmtEl);
-  count++;
 });
-
           }
         });
 
