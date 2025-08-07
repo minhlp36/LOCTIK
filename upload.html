@@ -119,15 +119,18 @@
             submitBtn.textContent = "Đăng bài";
           },
           async () => {
-            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-            await db.collection("posts").add({
-              imageUrl: downloadURL,
-              caption,
-              email: currentUser.email,
-              uid: currentUser.uid,
-              displayName: currentUser.displayName || "",
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+  const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+  await db.collection("posts").add({
+    imageUrl: downloadURL,
+    caption,
+    email: currentUser.email,
+    uid: currentUser.uid,
+    displayName: currentUser.displayName || currentUser.email || "Ẩn danh",
+    avatarUrl: currentUser.photoURL || "https://www.gravatar.com/avatar?d=mp",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+};
+
             message.className = "text-sm text-green-500 mt-3";
             message.textContent = "✅ Đăng bài thành công!";
             progressContainer.innerHTML = "";
