@@ -11,39 +11,37 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="bg-gray-100 min-h-screen pb-24">
 
-  <div class="max-w-md w-full mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold mb-4 text-center">Đăng bài mới</h1>
+  <div class="max-w-md mx-auto mt-6 p-4 bg-white rounded shadow">
+    <h1 class="text-2xl font-bold text-center mb-4">Đăng bài mới</h1>
     <form id="uploadForm" class="space-y-4">
-      <input type="file" id="imageInput" accept="image/*" class="w-full border p-2 rounded" />
+      <input type="file" id="imageInput" accept="image/*" multiple class="w-full border p-2 rounded" />
       <textarea id="captionInput" rows="3" placeholder="Viết chú thích..." class="w-full border p-2 rounded"></textarea>
-      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">Đăng bài</button>
+      <div id="progressContainer" class="text-sm text-blue-600"></div>
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng bài</button>
+      <p id="message" class="text-sm text-center mt-2 text-gray-700"></p>
     </form>
-    <div class="mt-4 text-sm text-gray-700" id="progressContainer"></div>
-    <p id="message" class="text-sm text-center mt-3 text-gray-700"></p>
   </div>
 
+  <!-- Thanh điều hướng -->
   <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
     <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">🏠</span>
-      <span class="text-sm">Trang chủ</span>
+      <span class="text-xl">🏠</span><span class="text-sm">Trang chủ</span>
     </a>
     <a href="upload.html" class="flex flex-col items-center text-blue-600">
-      <span class="text-xl">➕</span>
-      <span class="text-sm">Đăng</span>
+      <span class="text-xl">➕</span><span class="text-sm">Đăng</span>
     </a>
     <a href="chat.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">💬</span>
-      <span class="text-sm">Tin nhắn</span>
+      <span class="text-xl">💬</span><span class="text-sm">Tin nhắn</span>
     </a>
     <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">👤</span>
-      <span class="text-sm">Tài khoản</span>
+      <span class="text-xl">👤</span><span class="text-sm">Tài khoản</span>
     </a>
   </div>
 
   <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
@@ -76,62 +74,80 @@
 
     uploadForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const file = imageInput.files[0];
-      const caption = captionInput.value.trim();
 
-      if (!file && !caption) {
-        message.className = "text-sm text-red-500 mt-3";
-        message.textContent = "❌ Vui lòng nhập chú thích hoặc chọn ảnh.";
+      const caption = captionInput.value.trim();
+      const files = Array.from(imageInput.files).slice(0, 5); // Tối đa 5 ảnh
+
+      if (files.length === 0 && !caption) {
+        message.className = "text-sm text-red-500 mt-2";
+        message.textContent = "❌ Hãy nhập chú thích hoặc chọn ảnh.";
         return;
       }
 
       const submitBtn = uploadForm.querySelector("button[type='submit']");
       submitBtn.disabled = true;
       submitBtn.textContent = "⏳ Đang đăng...";
-      message.className = "text-sm text-blue-500 mt-3";
-      message.textContent = file ? "⏳ Đang tải ảnh..." : "⏳ Đang đăng bài...";
 
       try {
-        let imageUrl = "";
+        let imageUrls = [];
 
-        if (file) {
-          if (file.size > 5 * 1024 * 1024) {
-            throw new Error("Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.");
+        if (files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            if (file.size > 5 * 1024 * 1024) {
+              throw new Error("Ảnh quá lớn. Giới hạn mỗi ảnh là 5MB.");
+            }
+
+            const compressed = await imageCompression(file, {
+              maxSizeMB: 1,
+              maxWidthOrHeight: 1024,
+              useWebWorker: true
+            });
+
+            const filename = `posts/${Date.now()}_${compressed.name}`;
+            const storageRef = storage.ref().child(filename);
+            const uploadTask = storageRef.put(compressed);
+
+            await new Promise((resolve, reject) => {
+              uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  const percent = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                  progressContainer.innerHTML = `📤 Đang tải ảnh ${i + 1}/${files.length}: ${percent}%`;
+                },
+                (error) => reject(error),
+                async () => {
+                  const url = await uploadTask.snapshot.ref.getDownloadURL();
+                  imageUrls.push(url);
+                  resolve();
+                }
+              );
+            });
           }
-
-          const compressedFile = await imageCompression(file, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1024,
-            useWebWorker: true
-          });
-
-          const storageRef = storage.ref().child("posts/" + Date.now() + "_" + compressedFile.name);
-          const uploadTaskSnapshot = await storageRef.put(compressedFile);
-
-          imageUrl = await uploadTaskSnapshot.ref.getDownloadURL();
         }
 
         await db.collection("posts").add({
-          imageUrl: imageUrl || "", // Dù không có ảnh vẫn thêm field
           caption,
-          email: currentUser.email,
+          imageUrls,
           uid: currentUser.uid,
+          email: currentUser.email,
           displayName: currentUser.displayName || currentUser.email || "Ẩn danh",
           avatarUrl: currentUser.photoURL || "https://www.gravatar.com/avatar?d=mp",
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        message.className = "text-sm text-green-500 mt-3";
+        message.className = "text-sm text-green-500 mt-2";
         message.textContent = "✅ Đăng bài thành công!";
         progressContainer.innerHTML = "";
+        uploadForm.reset();
         submitBtn.disabled = false;
         submitBtn.textContent = "Đăng bài";
-        uploadForm.reset();
-        setTimeout(() => {
-          window.location.href = "feed.html";
-        }, 1000);
+
+        setTimeout(() => window.location.href = "feed.html", 1000);
+
       } catch (err) {
-        message.className = "text-sm text-red-500 mt-3";
+        message.className = "text-sm text-red-500 mt-2";
         message.textContent = "❌ Lỗi: " + err.message;
         submitBtn.disabled = false;
         submitBtn.textContent = "Đăng bài";
