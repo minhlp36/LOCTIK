@@ -12,11 +12,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <style>
-    .nav-btn {
-      @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
+    .like-btn {
+      transition: transform 0.2s;
     }
-    .nav-btn.active {
-      @apply text-blue-500 font-semibold;
+    .like-btn:active {
+      transform: scale(1.2);
     }
   </style>
 </head>
@@ -37,7 +37,7 @@
       <span class="text-xl">➕</span>
       <span class="text-sm">Đăng</span>
     </a>
-    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+    <a href="chat.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
       <span class="text-xl">💬</span>
       <span class="text-sm">Tin nhắn</span>
     </a>
@@ -81,27 +81,29 @@
             const data = doc.data();
             const postId = doc.id;
             const username = data.displayName || data.email || "Ẩn danh";
-            const time = data.createdAt?.toDate().toLocaleString("vi-VN") || "Vừa xong";
+            const time = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleString("vi-VN") : "Vừa xong";
             const caption = data.caption || "";
             const url = data.url || "";
+            const avatar = data.avatarUrl || "https://www.gravatar.com/avatar?d=mp";
+
             const likeRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
             const commentRef = db.collection("posts").doc(postId).collection("comments");
 
-            // Kiểm tra đã like chưa
             const likeSnap = await likeRef.get();
             const liked = likeSnap.exists;
 
-            // Đếm số like
             const likesSnap = await db.collection("posts").doc(postId).collection("likes").get();
             let likeCount = likesSnap.size;
 
-            // Tạo HTML
             const postEl = document.createElement("div");
             postEl.className = "bg-white p-4 rounded shadow space-y-2";
 
             postEl.innerHTML = `
-              <p class="text-sm text-gray-500">${username} • ${time}</p>
-              ${url ? `<img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover" />` : ""}
+              <div class="flex items-center gap-2 mb-2">
+                <img src="${avatar}" class="w-8 h-8 rounded-full object-cover" />
+                <p class="text-sm text-gray-500">${username} • ${time}</p>
+              </div>
+              ${url ? `<img src="${url}" class="rounded mb-2 max-h-96 w-full object-cover transition-opacity duration-300 opacity-0" loading="lazy" onload="this.style.opacity='1'" />` : ""}
               <p class="text-gray-800">${caption}</p>
               <button class="like-btn text-red-500">${liked ? "❤️" : "🤍"} ${likeCount}</button>
 
@@ -110,67 +112,64 @@
                   <input type="text" placeholder="Bình luận..." class="flex-1 p-2 border rounded" />
                   <button type="submit" class="bg-blue-500 text-white px-3 rounded">Gửi</button>
                 </form>
-                <div class="comment-list mt-2 text-sm text-gray-700 space-y-1">
-                  <p class="text-gray-400 italic">⏳ Đang tải bình luận...</p>
-                </div>
+                <p class="comment-count text-sm text-gray-600 mt-2">⏳ Đang tải bình luận...</p>
+                <div class="comment-list mt-2 text-sm text-gray-700 space-y-1"></div>
               </div>
             `;
 
             postList.appendChild(postEl);
 
-            // Xử lý Like
+            // Like
             const likeBtn = postEl.querySelector(".like-btn");
             likeBtn.addEventListener("click", async () => {
               const docRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
               const snapshot = await docRef.get();
-
               if (!snapshot.exists) {
                 await docRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
                 likeCount++;
-                likeBtn.textContent = `❤️ ${likeCount}`;
+                likeBtn.innerHTML = `❤️ ${likeCount}`;
               } else {
                 await docRef.delete();
                 likeCount--;
-                likeBtn.textContent = `🤍 ${likeCount}`;
+                likeBtn.innerHTML = `🤍 ${likeCount}`;
               }
             });
 
-            // Gửi bình luận
+            // Comment
             const commentForm = postEl.querySelector(".comment-form");
             const commentInput = commentForm.querySelector("input");
             commentForm.addEventListener("submit", async (e) => {
               e.preventDefault();
               const text = commentInput.value.trim();
-              if (!text) return;
+              if (!text || text.length > 200) return alert("Bình luận không hợp lệ!");
               await commentRef.add({
-                text: text,
+                text,
                 email: currentUser.email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
               });
               commentInput.value = "";
             });
 
-            // Hiển thị bình luận
+            const commentCountEl = postEl.querySelector(".comment-count");
             const commentList = postEl.querySelector(".comment-list");
+
             commentRef.orderBy("createdAt", "asc").onSnapshot(commentSnap => {
               commentList.innerHTML = "";
-              commentSnap.forEach(cmtDoc => {
-                const cmt = cmtDoc.data();
-                const cmtEl = document.createElement("p");
-                cmtEl.innerHTML = `<strong>${cmt.email || "Ẩn danh"}:</strong> ${cmt.text}`;
-                commentList.appendChild(cmtEl);
-              });
+              commentCountEl.textContent = `${commentSnap.size} bình luận`;
 
               if (commentSnap.empty) {
                 commentList.innerHTML = `<p class="text-gray-400 italic">Chưa có bình luận nào.</p>`;
+              } else {
+                commentSnap.forEach(cmtDoc => {
+                  const cmt = cmtDoc.data();
+                  const cmtEl = document.createElement("p");
+                  cmtEl.innerHTML = `<strong>${cmt.email || "Ẩn danh"}:</strong> ${cmt.text}`;
+                  commentList.appendChild(cmtEl);
+                });
               }
             });
           });
         });
-    }
-
-    function goTo(page) {
-      window.location.href = page;
     }
   </script>
 </body>
