@@ -141,7 +141,7 @@
 
           await addDoc(collection(db, "posts"), {
             uid: user.uid,
-            content,
+            text: content,
             imageUrls: uploadedImageUrls,
             createdAt: serverTimestamp(),
           });
