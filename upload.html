@@ -112,9 +112,15 @@
     }
 
     uploadBtn.addEventListener("click", async () => {
-      const content = postContent.value.trim();
-      const files = Array.from(fileInput.files);
+     const content = postContent.value.trim();
+     const files = Array.from(fileInput.files);
 
+     if (!content && files.length === 0) { alert("Vui lòng nhập nội dung hoặc chọn ít nhất 1 ảnh!");
+    return;
+  }
+      if (content.length > 300) { alert("Nội dung quá dài (tối đa 300 ký tự).");
+    return;
+  }
       uploadBtn.disabled = true;
       uploadBtn.textContent = "Đang đăng...";
       progressContainer.classList.remove("hidden");
