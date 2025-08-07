@@ -112,11 +112,7 @@
         const postId = docSnap.id;
 
         const username = data.displayName || data.email || "Ẩn danh";
-        <p class="text-sm text-gray-500">
-  <span class="font-medium">${username}</span>
-  <span class="mx-1">·</span>
-  <span>${time}</span>
-</p>
+        const time = data.createdAt?.toDate?.() ? data.createdAt.toDate().toLocaleString("vi-VN") : "Vừa xong";
 
         const caption = data.text || data.caption || "";
         const imageUrls = data.imageUrls || [];
