@@ -39,12 +39,12 @@
   </div>
 
   <script>
-    // Cấu hình Firebase của bạn
+    // Cấu hình Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
       projectId: "loktik-1d9af",
-      storageBucket: "loktik-1d9af.firebasestorage.app",
+      storageBucket: "loktik-1d9af.appspot.com",
       messagingSenderId: "801363229819",
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
       measurementId: "G-S6HQ3HN7W3"
@@ -79,61 +79,64 @@
     });
 
     // Xử lý đăng nhập
-    auth.signInWithEmailAndPassword(email, password)
-  .then(() => {
-    message.textContent = '';
-    message.classList.add('hidden');
-    alert("Đăng nhập thành công!");
-    window.location.href = 'index.html';
-  })
-  .catch((error) => {
-    let msg = '';
-    switch (error.code) {
-      case 'auth/invalid-email':
-        msg = 'Email không hợp lệ.';
-        break;
-      case 'auth/user-not-found':
-        msg = 'Không tìm thấy tài khoản.';
-        break;
-      case 'auth/wrong-password':
-        msg = 'Sai mật khẩu.';
-        break;
-      default:
-        msg = 'Lỗi: ' + error.message;
-    }
-    message.textContent = msg;
-    message.classList.remove('hidden');
-  });
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("Đăng nhập thành công!");
+          window.location.href = 'index.html';
+        })
+        .catch((error) => {
+          let msg = '';
+          switch (error.code) {
+            case 'auth/invalid-email':
+              msg = 'Email không hợp lệ.';
+              break;
+            case 'auth/user-not-found':
+              msg = 'Không tìm thấy tài khoản.';
+              break;
+            case 'auth/wrong-password':
+              msg = 'Sai mật khẩu.';
+              break;
+            default:
+              msg = 'Lỗi: ' + error.message;
+          }
+          message.textContent = msg;
+        });
     });
 
     // Xử lý đăng ký
-    auth.createUserWithEmailAndPassword(email, password)
-  .then(() => {
-    message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
-    message.classList.remove('hidden');
-    registerForm.reset();
-    registerTab.click();
-  })
-  .catch((error) => {
-    let msg = '';
-    switch (error.code) {
-      case 'auth/invalid-email':
-        msg = 'Email không hợp lệ.';
-        break;
-      case 'auth/email-already-in-use':
-        msg = 'Email đã được đăng ký.';
-        break;
-      case 'auth/weak-password':
-        msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
-        break;
-      default:
-        msg = 'Lỗi: ' + error.message;
-    }
-    message.textContent = msg;
-    message.classList.remove('hidden');
-  });
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
 
-
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
+          registerForm.reset();
+          loginTab.click(); // tự động chuyển về tab đăng nhập
+        })
+        .catch((error) => {
+          let msg = '';
+          switch (error.code) {
+            case 'auth/invalid-email':
+              msg = 'Email không hợp lệ.';
+              break;
+            case 'auth/email-already-in-use':
+              msg = 'Email đã được đăng ký.';
+              break;
+            case 'auth/weak-password':
+              msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
+              break;
+            default:
+              msg = 'Lỗi: ' + error.message;
+          }
+          message.textContent = msg;
+        });
     });
   </script>
 </body>
