@@ -34,12 +34,18 @@
 
     // Kiểm tra đăng nhập
     auth.onAuthStateChanged((user) => {
-      if (user) {
-        document.getElementById("userEmail").textContent = "Bạn đang đăng nhập với: " + user.email;
-      } else {
-        window.location.href = "login.html"; // nếu chưa đăng nhập thì chuyển về login
+  if (user) {
+    document.getElementById("userEmail").textContent = "Bạn đang đăng nhập với: " + user.email;
+  } else {
+    // Đợi Firebase xác nhận trạng thái người dùng, tránh chuyển nhầm về login.html
+    setTimeout(() => {
+      if (!auth.currentUser) {
+        window.location.href = "login.html";
       }
-    });
+    }, 500);
+  }
+});
+
 
     // Xử lý đăng xuất
     document.getElementById("logoutBtn").addEventListener("click", () => {
