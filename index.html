@@ -9,13 +9,46 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <style>
+    .nav-btn {
+      @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
+    }
+    .nav-btn.active {
+      @apply text-blue-500 font-semibold;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
-    <h1 class="text-2xl font-bold mb-4">Chào mừng đến LokTik! 🎉</h1>
-    <p id="userEmail" class="mb-4 text-gray-700"></p>
-    <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Đăng xuất</button>
-  </div>
+<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+
+  <!-- Nội dung chính -->
+  <main class="flex-grow flex items-center justify-center">
+    <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
+      <h1 class="text-2xl font-bold mb-4">🎉 Chào mừng đến LokTik!</h1>
+      <p id="userEmail" class="mb-4 text-gray-700">Đang tải...</p>
+      <!-- ❌ Đã xoá nút đăng xuất ở đây -->
+    </div>
+  </main>
+
+  <!-- Thanh điều hướng -->
+  <nav class="w-full bg-white border-t fixed bottom-0 left-0 flex justify-around py-2">
+    <button class="nav-btn" onclick="goTo('feed.html')">
+      <span class="text-2xl">🏠</span>
+      <span>Trang chủ</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('upload.html')">
+      <span class="text-2xl">➕</span>
+      <span>Đăng</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('chat.html')">
+      <span class="text-2xl">💬</span>
+      <span>Nhắn tin</span>
+    </button>
+    <button class="nav-btn" onclick="goTo('account.html')">
+      <span class="text-2xl">👤</span>
+      <span>Tài khoản</span>
+    </button>
+  </nav>
 
   <script>
     // Firebase config
@@ -23,36 +56,34 @@
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
       projectId: "loktik-1d9af",
-      storageBucket: "loktik-1d9af.firebasestorage.app",
+      storageBucket: "loktik-1d9af.appspot.com",
       messagingSenderId: "801363229819",
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
       measurementId: "G-S6HQ3HN7W3"
     };
 
+    // Khởi tạo Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
     // Kiểm tra đăng nhập
     auth.onAuthStateChanged((user) => {
-  if (user) {
-    document.getElementById("userEmail").textContent = "Bạn đang đăng nhập với: " + user.email;
-  } else {
-    // Đợi Firebase xác nhận trạng thái người dùng, tránh chuyển nhầm về login.html
-    setTimeout(() => {
-      if (!auth.currentUser) {
-        window.location.href = "login.html";
+      const emailEl = document.getElementById("userEmail");
+      if (user) {
+        emailEl.textContent = "Bạn đang đăng nhập với: " + user.email;
+      } else {
+        setTimeout(() => {
+          if (!auth.currentUser) {
+            window.location.href = "login.html";
+          }
+        }, 500);
       }
-    }, 500);
-  }
-});
-
-
-    // Xử lý đăng xuất
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      });
     });
+
+    // Điều hướng
+    function goTo(page) {
+      window.location.href = page;
+    }
   </script>
 </body>
 </html>
