@@ -209,7 +209,7 @@
 
           await addDoc(commentCol, {
             text,
-            email: currentUser.email,
+            displayName: auth.currentUser.displayName || "Ẩn danh"
             createdAt: serverTimestamp()
           });
 
