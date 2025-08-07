@@ -209,7 +209,7 @@
 
           await addDoc(commentCol, {
             text,
-            displayName: currentUser.displayName || "Ẩn danh"
+            displayName: currentUser.displayName || "Ẩn danh",
             createdAt: serverTimestamp()
           });
 
