@@ -3,55 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LokTik - Đăng ảnh</title>
+  <title>Đăng bài - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-  <!-- Nén ảnh -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-
-  <style>
-    .nav-btn {
-      @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
-    }
-    .nav-btn.active {
-      @apply text-blue-500 font-semibold;
-    }
-  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+<body class="bg-gray-100 min-h-screen flex flex-col">
 
-  <!-- Nội dung chính -->
-  <main class="flex-grow flex items-center justify-center">
-    <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
-      <h2 class="text-xl font-bold mb-4">📤 Đăng bài</h2>
-      <form id="uploadForm">
-        <input type="file" id="photoInput" accept="image/*" class="mb-4 w-full" />
-        <textarea id="captionInput" placeholder="Viết gì đó..." class="w-full p-2 border rounded mb-4" rows="3"></textarea>
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">
-          Đăng bài
-        </button>
-      </form>
-      <p id="message" class="text-sm text-center mt-3 text-gray-700"></p>
-    </div>
-  </main>
+  <div class="max-w-md w-full mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <h1 class="text-2xl font-semibold mb-4 text-center">Đăng bài mới</h1>
+    <form id="uploadForm" class="space-y-4">
+      <input type="file" id="imageInput" accept="image/*" required class="w-full border p-2 rounded" />
+      <textarea id="captionInput" rows="3" placeholder="Viết chú thích..." class="w-full border p-2 rounded"></textarea>
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">Đăng bài</button>
+    </form>
+    <div class="mt-4 text-sm text-gray-700" id="progressContainer"></div>
+    <p id="message" class="text-sm text-center mt-3 text-gray-700"></p>
+  </div>
 
-  <!-- Điều hướng -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around py-2">
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
     <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
       <span class="text-xl">🏠</span>
       <span class="text-sm">Trang chủ</span>
     </a>
-    <a href="upload.html" class="flex flex-col items-center text-blue-500 font-bold">
+    <a href="upload.html" class="flex flex-col items-center text-blue-600">
       <span class="text-xl">➕</span>
       <span class="text-sm">Đăng</span>
     </a>
-    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
+    <a href="chat.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
       <span class="text-xl">💬</span>
       <span class="text-sm">Tin nhắn</span>
     </a>
@@ -59,7 +41,7 @@
       <span class="text-xl">👤</span>
       <span class="text-sm">Tài khoản</span>
     </a>
-  </nav>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -76,87 +58,94 @@
     const storage = firebase.storage();
     const db = firebase.firestore();
 
-    const photoInput = document.getElementById("photoInput");
-    const captionInput = document.getElementById("captionInput");
     const uploadForm = document.getElementById("uploadForm");
+    const imageInput = document.getElementById("imageInput");
+    const captionInput = document.getElementById("captionInput");
     const message = document.getElementById("message");
+    const progressContainer = document.getElementById("progressContainer");
+
+    let currentUser = null;
 
     auth.onAuthStateChanged(user => {
       if (!user) {
         window.location.href = "login.html";
+      } else {
+        currentUser = user;
       }
     });
 
     uploadForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const file = photoInput.files[0];
+      const file = imageInput.files[0];
       const caption = captionInput.value.trim();
 
-      if (!file && !caption) {
-        message.textContent = "❌ Vui lòng chọn ảnh hoặc nhập bài viết!";
+      if (!file) {
+        message.className = "text-sm text-red-500 mt-3";
+        message.textContent = "❌ Vui lòng chọn ảnh.";
         return;
       }
 
-      const user = auth.currentUser;
-      message.textContent = "⏳ Đang xử lý...";
+      if (file.size > 5 * 1024 * 1024) {
+        message.className = "text-sm text-red-500 mt-3";
+        message.textContent = "❌ Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.";
+        return;
+      }
+
+      const submitBtn = uploadForm.querySelector("button[type='submit']");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "⏳ Đang đăng...";
+      message.className = "text-sm text-blue-500 mt-3";
+      message.textContent = "⏳ Đang tải ảnh...";
 
       try {
-        let imageUrl = "";
-
-        if (file) {
-          message.textContent = "⏳ Đang nén ảnh...";
-          const compressed = await imageCompression(file, {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1080,
-            useWebWorker: true,
-          });
-
-          const fileName = Date.now() + "_" + compressed.name;
-          const storageRef = storage.ref("images/" + fileName);
-          const uploadTask = storageRef.put(compressed);
-
-          await new Promise((resolve, reject) => {
-            uploadTask.on(
-              "state_changed",
-              (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                message.textContent = `⏳ Đang tải ảnh... ${Math.round(progress)}%`;
-              },
-              (err) => {
-                reject(err);
-              },
-              async () => {
-                imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
-                resolve();
-              }
-            );
-          });
-        }
-
-        await db.collection("posts").add({
-          url: imageUrl,
-          caption: caption,
-          uid: user.uid,
-          email: user.email,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1024,
+          useWebWorker: true
         });
 
-        message.textContent = "✅ Đăng bài thành công!";
-        uploadForm.reset();
+        const storageRef = storage.ref().child("posts/" + Date.now() + "_" + compressedFile.name);
+        const uploadTask = storageRef.put(compressedFile);
 
-        setTimeout(() => {
-          window.location.href = "feed.html";
-        }, 1500);
-
+        uploadTask.on("state_changed",
+          (snapshot) => {
+            const percent = Math.floor((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            progressContainer.innerHTML = `Đang tải lên: ${percent}%`;
+          },
+          (error) => {
+            message.className = "text-sm text-red-500 mt-3";
+            message.textContent = "❌ Lỗi tải ảnh: " + error.message;
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Đăng bài";
+          },
+          async () => {
+            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+            await db.collection("posts").add({
+              imageUrl: downloadURL,
+              caption,
+              email: currentUser.email,
+              uid: currentUser.uid,
+              displayName: currentUser.displayName || "",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            message.className = "text-sm text-green-500 mt-3";
+            message.textContent = "✅ Đăng bài thành công!";
+            progressContainer.innerHTML = "";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Đăng bài";
+            uploadForm.reset();
+            setTimeout(() => {
+              window.location.href = "feed.html";
+            }, 1000);
+          }
+        );
       } catch (err) {
+        message.className = "text-sm text-red-500 mt-3";
         message.textContent = "❌ Lỗi: " + err.message;
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Đăng bài";
       }
     });
-
-    function goTo(page) {
-      window.location.href = page;
-    }
   </script>
 </body>
 </html>
