@@ -93,7 +93,7 @@
 
             // Đếm số like
             const likesSnap = await db.collection("posts").doc(postId).collection("likes").get();
-            const likeCount = likesSnap.size;
+            let likeCount = likesSnap.size;
 
             // Tạo HTML
             const postEl = document.createElement("div");
@@ -118,24 +118,22 @@
 
             postList.appendChild(postEl);
 
-            // Like handler cải tiến
-likeBtn.addEventListener("click", async () => {
-  const docRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
-  const snapshot = await docRef.get();
+            // Xử lý Like
+            const likeBtn = postEl.querySelector(".like-btn");
+            likeBtn.addEventListener("click", async () => {
+              const docRef = db.collection("posts").doc(postId).collection("likes").doc(currentUser.uid);
+              const snapshot = await docRef.get();
 
-  if (!snapshot.exists) {
-    // Like
-    await docRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
-    likeCount++; // tăng ngay trong UI
-    likeBtn.textContent = `❤️ ${likeCount}`;
-  } else {
-    // Unlike
-    await docRef.delete();
-    likeCount--; // giảm ngay trong UI
-    likeBtn.textContent = `🤍 ${likeCount}`;
-  }
-});
-
+              if (!snapshot.exists) {
+                await docRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                likeCount++;
+                likeBtn.textContent = `❤️ ${likeCount}`;
+              } else {
+                await docRef.delete();
+                likeCount--;
+                likeBtn.textContent = `🤍 ${likeCount}`;
+              }
+            });
 
             // Gửi bình luận
             const commentForm = postEl.querySelector(".comment-form");
@@ -150,6 +148,22 @@ likeBtn.addEventListener("click", async () => {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
               });
               commentInput.value = "";
+            });
+
+            // Hiển thị bình luận
+            const commentList = postEl.querySelector(".comment-list");
+            commentRef.orderBy("createdAt", "asc").onSnapshot(commentSnap => {
+              commentList.innerHTML = "";
+              commentSnap.forEach(cmtDoc => {
+                const cmt = cmtDoc.data();
+                const cmtEl = document.createElement("p");
+                cmtEl.innerHTML = `<strong>${cmt.email || "Ẩn danh"}:</strong> ${cmt.text}`;
+                commentList.appendChild(cmtEl);
+              });
+
+              if (commentSnap.empty) {
+                commentList.innerHTML = `<p class="text-gray-400 italic">Chưa có bình luận nào.</p>`;
+              }
             });
           });
         });
