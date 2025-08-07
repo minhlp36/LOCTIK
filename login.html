@@ -91,8 +91,29 @@
           window.location.href = 'index.html'; // Tạo file home.html nếu chưa có
         })
         .catch((error) => {
-          message.textContent = 'Lỗi: ' + error.message;
-        });
+  let msg = '';
+  switch (error.code) {
+    case 'auth/invalid-email':
+      msg = 'Email không hợp lệ.';
+      break;
+    case 'auth/user-not-found':
+      msg = 'Không tìm thấy tài khoản.';
+      break;
+    case 'auth/wrong-password':
+      msg = 'Sai mật khẩu.';
+      break;
+    case 'auth/email-already-in-use':
+      msg = 'Email đã được đăng ký.';
+      break;
+    case 'auth/weak-password':
+      msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
+      break;
+    default:
+      msg = 'Lỗi: ' + error.message;
+  }
+  message.textContent = msg;
+});
+
     });
 
     // Xử lý đăng ký
@@ -108,8 +129,29 @@
           registerTab.click(); // tự động chuyển về tab đăng nhập
         })
         .catch((error) => {
-          message.textContent = 'Lỗi: ' + error.message;
-        });
+  let msg = '';
+  switch (error.code) {
+    case 'auth/invalid-email':
+      msg = 'Email không hợp lệ.';
+      break;
+    case 'auth/user-not-found':
+      msg = 'Không tìm thấy tài khoản.';
+      break;
+    case 'auth/wrong-password':
+      msg = 'Sai mật khẩu.';
+      break;
+    case 'auth/email-already-in-use':
+      msg = 'Email đã được đăng ký.';
+      break;
+    case 'auth/weak-password':
+      msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
+      break;
+    default:
+      msg = 'Lỗi: ' + error.message;
+  }
+  message.textContent = msg;
+});
+
     });
   </script>
 </body>
