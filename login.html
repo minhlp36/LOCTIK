@@ -39,7 +39,7 @@
   </div>
 
   <script>
-    // Cấu hình Firebase
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
@@ -59,7 +59,7 @@
     const registerForm = document.getElementById('registerForm');
     const message = document.getElementById('message');
 
-    // Chuyển tab
+    // Tab switching
     loginTab.addEventListener('click', () => {
       loginForm.classList.remove('hidden');
       registerForm.classList.add('hidden');
@@ -78,7 +78,7 @@
       loginTab.classList.remove('bg-blue-500', 'text-white');
     });
 
-    // Xử lý đăng nhập
+    // Handle login
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
@@ -86,6 +86,7 @@
 
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
+          message.textContent = '';
           alert("Đăng nhập thành công!");
           window.location.href = 'index.html';
         })
@@ -108,7 +109,7 @@
         });
     });
 
-    // Xử lý đăng ký
+    // Handle registration
     registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('registerEmail').value;
@@ -118,7 +119,7 @@
         .then(() => {
           message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
           registerForm.reset();
-          loginTab.click(); // tự động chuyển về tab đăng nhập
+          loginTab.click(); // switch back to login tab
         })
         .catch((error) => {
           let msg = '';
