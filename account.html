@@ -1,232 +1,116 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LokTik - Tài khoản</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tài khoản của tôi</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen p-4">
-  <h1 class="text-2xl font-bold mb-4">👤 Tài khoản của tôi</h1>
+<body class="bg-gray-100 text-gray-800">
 
-  <!-- Tabs -->
-  <div class="flex space-x-2 mb-4">
-    <button onclick="showTab('info')" class="tab-btn bg-blue-500 text-white px-3 py-1 rounded">Thông tin</button>
-    <button onclick="showTab('posts')" class="tab-btn bg-gray-200 text-gray-700 px-3 py-1 rounded">Bài viết</button>
-    <button onclick="showTab('friends')" class="tab-btn bg-gray-200 text-gray-700 px-3 py-1 rounded">Bạn bè</button>
-  </div>
+  <div class="max-w-xl mx-auto p-4">
 
-  <!-- Thông tin cá nhân -->
-  <div id="tab-info" class="tab">
-    <p><strong>Email:</strong> <span id="emailInfo"></span></p>
-    <p><strong>User ID:</strong> <span id="uidInfo"></span></p>
-    <p><strong>Ngày tạo:</strong> <span id="createdAtInfo"></span></p>
-  </div>
-
-  <!-- Bài viết của tôi -->
-  <div id="tab-posts" class="tab hidden">
-    <div id="myPosts" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-  </div>
-
-  <!-- Bạn bè -->
-  <div id="tab-friends" class="tab hidden space-y-4">
-    <div>
-      <h2 class="font-semibold mb-2">🔍 Tìm bạn</h2>
-      <ul id="userList" class="space-y-2"></ul>
+    <!-- Thông tin người dùng -->
+    <div id="user-info" class="bg-white shadow p-4 mb-6 rounded text-center">
+      <img id="user-avatar" src="" alt="Avatar" class="w-24 h-24 mx-auto rounded-full object-cover">
+      <h2 id="user-email" class="text-lg font-bold mt-2"></h2>
+      <p id="user-uid" class="text-sm text-gray-500 break-all"></p>
     </div>
 
-    <div>
-      <h2 class="font-semibold mb-2">📬 Lời mời kết bạn</h2>
-      <ul id="requestsList" class="space-y-2"></ul>
+    <!-- Bài đăng của tôi -->
+    <div class="bg-white shadow p-4 rounded mb-6">
+      <h2 class="text-xl font-semibold mb-4">Bài viết của tôi</h2>
+      <div id="my-posts" class="space-y-4"></div>
     </div>
 
-    <div>
-      <h2 class="font-semibold mb-2">✅ Bạn bè</h2>
-      <ul id="friendsList" class="space-y-2"></ul>
+    <!-- Nút quay lại -->
+    <div class="text-center">
+      <a href="feed.html" class="bg-blue-500 text-white px-4 py-2 rounded">⬅️ Quay lại</a>
     </div>
+
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+    import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
-      authDomain: "loktik-1d9af.firebaseapp.com",
-      projectId: "loktik-1d9af",
-      storageBucket: "loktik-1d9af.appspot.com",
-      messagingSenderId: "801363229819",
-      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    let currentUser;
+    const userInfo = document.getElementById("user-info");
+    const userEmail = document.getElementById("user-email");
+    const userUid = document.getElementById("user-uid");
+    const userAvatar = document.getElementById("user-avatar");
+    const postList = document.getElementById("my-posts");
 
-    // Tab chuyển đổi
-    function showTab(tab) {
-      document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("bg-blue-500", "text-white"));
-      document.getElementById(`tab-${tab}`).classList.remove("hidden");
-      event.target.classList.add("bg-blue-500", "text-white");
-    }
-
-    auth.onAuthStateChanged(async user => {
-      if (!user) return window.location.href = "login.html";
-      currentUser = user;
-
-      // Thông tin cá nhân
-      document.getElementById("emailInfo").textContent = user.email;
-      document.getElementById("uidInfo").textContent = user.uid;
-      document.getElementById("createdAtInfo").textContent = new Date(user.metadata.creationTime).toLocaleString();
-
-      loadMyPosts();
-      loadUsers();
-      loadFriendRequests();
-      loadFriends();
-    });
-
-    // Load bài viết của tôi
-    async function loadMyPosts() {
-      const container = document.getElementById("myPosts");
-      container.innerHTML = "";
-      const snap = await db.collection("posts").where("uid", "==", currentUser.uid).orderBy("createdAt", "desc").get();
-      snap.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "bg-white p-3 rounded shadow";
-
-        div.innerHTML = `
-          <img src="${data.imageUrl}" class="w-full rounded mb-2"/>
-          <p class="mb-2">${data.caption || ""}</p>
-          <button onclick="deletePost('${doc.id}', '${data.imagePath}')" class="text-red-500 hover:underline">🗑️ Xoá</button>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-
-    // Xoá bài viết
-    async function deletePost(postId, imagePath) {
-      if (confirm("Bạn có chắc muốn xoá bài này không?")) {
-        await db.collection("posts").doc(postId).delete();
-        if (imagePath) {
-          await storage.ref(imagePath).delete();
-        }
-        loadMyPosts();
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
       }
-    }
 
-    // Load danh sách người dùng để tìm bạn
-    async function loadUsers() {
-      const userList = document.getElementById("userList");
-      userList.innerHTML = "";
+      // Hiển thị thông tin người dùng
+      userEmail.textContent = user.email;
+      userUid.textContent = user.uid;
+      userAvatar.src = user.photoURL || "https://i.pravatar.cc/150?img=12";
 
-      const usersSnap = await db.collection("users").get();
-      const friendSnap = await db.collection("friends").doc(currentUser.uid).collection("list").get();
-      const currentFriends = friendSnap.docs.map(doc => doc.id);
+      // Lấy bài viết của người dùng
+      const q = query(
+        collection(db, "posts"),
+        where("uid", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
 
-      const sentRequestsSnap = await db.collection("friendRequests").doc(currentUser.uid).collection("sent").get();
-      const sentRequestIds = sentRequestsSnap.docs.map(doc => doc.id);
+      onSnapshot(q, snapshot => {
+        postList.innerHTML = "";
+        snapshot.forEach(docSnap => {
+          const post = docSnap.data();
+          const postId = docSnap.id;
 
-      usersSnap.forEach(doc => {
-        const uid = doc.id;
-        if (uid === currentUser.uid || currentFriends.includes(uid)) return;
+          const postDiv = document.createElement("div");
+          postDiv.className = "border p-3 rounded shadow-sm";
 
-        const li = document.createElement("li");
-        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
-        li.textContent = doc.data().email;
+          postDiv.innerHTML = `
+            <img src="${post.imageUrl}" alt="post" class="w-full rounded mb-2">
+            <p class="text-gray-700 mb-1">${post.caption || ""}</p>
+            <p class="text-xs text-gray-400">${new Date(post.createdAt?.seconds * 1000).toLocaleString()}</p>
+            <div class="mt-2 flex gap-2">
+              <button class="bg-red-500 text-white px-3 py-1 rounded delete-btn" data-id="${postId}">Xoá</button>
+              <!-- <button class="bg-yellow-400 text-white px-3 py-1 rounded">Sửa</button> -->
+            </div>
+          `;
 
-        if (sentRequestIds.includes(uid)) {
-          li.innerHTML += "<span class='text-sm text-gray-400'>(Đã gửi)</span>";
-        } else {
-          const btn = document.createElement("button");
-          btn.className = "text-blue-500 hover:underline text-sm";
-          btn.textContent = "Kết bạn";
-          btn.onclick = async () => {
-            await db.collection("friendRequests").doc(uid).collection("requests").doc(currentUser.uid).set({ timestamp: Date.now() });
-            await db.collection("friendRequests").doc(currentUser.uid).collection("sent").doc(uid).set({ timestamp: Date.now() });
-            loadUsers();
-          };
-          li.appendChild(btn);
-        }
+          postList.appendChild(postDiv);
+        });
 
-        userList.appendChild(li);
+        // Xử lý xoá
+        document.querySelectorAll(".delete-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-id");
+            if (confirm("Bạn có chắc muốn xoá bài viết này không?")) {
+              await deleteDoc(doc(db, "posts", id));
+            }
+          });
+        });
       });
-    }
-
-    // Load lời mời kết bạn
-    async function loadFriendRequests() {
-      const list = document.getElementById("requestsList");
-      list.innerHTML = "";
-      const snap = await db.collection("friendRequests").doc(currentUser.uid).collection("requests").get();
-
-      snap.forEach(doc => {
-        const uid = doc.id;
-        const li = document.createElement("li");
-        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
-        li.textContent = uid;
-
-        const acceptBtn = document.createElement("button");
-        acceptBtn.textContent = "Chấp nhận";
-        acceptBtn.className = "text-green-600 mr-2 hover:underline text-sm";
-        acceptBtn.onclick = async () => {
-          await db.collection("friends").doc(currentUser.uid).collection("list").doc(uid).set({ createdAt: Date.now() });
-          await db.collection("friends").doc(uid).collection("list").doc(currentUser.uid).set({ createdAt: Date.now() });
-          await db.collection("friendRequests").doc(currentUser.uid).collection("requests").doc(uid).delete();
-          await db.collection("friendRequests").doc(uid).collection("sent").doc(currentUser.uid).delete();
-          loadFriendRequests();
-          loadFriends();
-          loadUsers();
-        };
-
-        const rejectBtn = document.createElement("button");
-        rejectBtn.textContent = "Xoá";
-        rejectBtn.className = "text-red-500 hover:underline text-sm";
-        rejectBtn.onclick = async () => {
-          await db.collection("friendRequests").doc(currentUser.uid).collection("requests").doc(uid).delete();
-          await db.collection("friendRequests").doc(uid).collection("sent").doc(currentUser.uid).delete();
-          loadFriendRequests();
-        };
-
-        li.appendChild(acceptBtn);
-        li.appendChild(rejectBtn);
-        list.appendChild(li);
-      });
-    }
-
-    // Load bạn bè hiện tại
-    async function loadFriends() {
-      const list = document.getElementById("friendsList");
-      list.innerHTML = "";
-      const snap = await db.collection("friends").doc(currentUser.uid).collection("list").get();
-
-      snap.forEach(doc => {
-        const uid = doc.id;
-        const li = document.createElement("li");
-        li.className = "bg-white p-3 rounded shadow flex justify-between items-center";
-        li.textContent = uid;
-
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "Huỷ";
-        removeBtn.className = "text-red-500 hover:underline text-sm";
-        removeBtn.onclick = async () => {
-          await db.collection("friends").doc(currentUser.uid).collection("list").doc(uid).delete();
-          await db.collection("friends").doc(uid).collection("list").doc(currentUser.uid).delete();
-          loadFriends();
-          loadUsers();
-        };
-
-        li.appendChild(removeBtn);
-        list.appendChild(li);
-      });
-    }
+    });
   </script>
 </body>
 </html>
