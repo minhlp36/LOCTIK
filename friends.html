@@ -1,31 +1,26 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bạn bè - LokTik</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kết bạn - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
+  <h1 class="text-2xl font-bold mb-4">Tìm bạn và kết bạn</h1>
 
-  <h1 class="text-2xl font-bold mb-4">Tìm bạn bè</h1>
+  <input id="searchInput" type="text" placeholder="Nhập tên, email hoặc UID..."
+    class="w-full p-2 border rounded mb-4" />
 
-  <input id="searchEmail" type="email" placeholder="Nhập email..." class="border p-2 rounded w-full mb-2">
-  <button id="searchBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Tìm kiếm</button>
+  <div id="results" class="space-y-4"></div>
 
-  <div id="searchResult" class="mt-4"></div>
-
-  <h2 class="text-xl font-bold mt-8 mb-2">Lời mời kết bạn đến</h2>
-  <div id="friendRequestsList" class="space-y-2"></div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, where, doc, setDoc, getDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  <!-- Firebase Config -->
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
@@ -33,138 +28,103 @@
       storageBucket: "loktik-1d9af.appspot.com",
       messagingSenderId: "801363229819",
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
-      measurementId: "G-S6HQ3HN7W3"
     };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  <!-- Script tìm bạn -->
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const resultsDiv = document.getElementById("results");
 
-    const searchInput = document.getElementById("searchEmail");
-    const searchBtn = document.getElementById("searchBtn");
-    const searchResult = document.getElementById("searchResult");
-    const friendRequestsList = document.getElementById("friendRequestsList");
+    let currentUser = null;
 
-    let currentUser;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        loadFriendRequests();
-      } else {
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        alert("Vui lòng đăng nhập");
         window.location.href = "login.html";
+        return;
       }
+      currentUser = user;
     });
 
-    searchBtn.addEventListener("click", async () => {
-      const email = searchInput.value.trim();
-      searchResult.innerHTML = "Đang tìm...";
+    searchInput.addEventListener("input", async () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      resultsDiv.innerHTML = "";
 
-      const q = query(collection(db, "users"), where("email", "==", email));
-      const querySnapshot = await getDocs(q);
+      if (keyword === "") return;
 
-      if (querySnapshot.empty) {
-        searchResult.innerHTML = "Không tìm thấy người dùng nào.";
-        return;
-      }
+      const snapshot = await db.collection("users").get();
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const uid = doc.id;
 
-      const userDoc = querySnapshot.docs[0];
-      const data = userDoc.data();
+        if (uid === currentUser.uid) return;
 
-      if (userDoc.id === currentUser.uid) {
-        searchResult.innerHTML = "Không thể gửi lời mời kết bạn cho chính mình.";
-        return;
-      }
+        const name = data.name?.toLowerCase() || "";
+        const email = data.email?.toLowerCase() || "";
 
-      // Kiểm tra đã là bạn bè chưa
-      const friendRef = doc(db, `friends/${currentUser.uid}/list`, userDoc.id);
-      const friendSnap = await getDoc(friendRef);
-      if (friendSnap.exists()) {
-        searchResult.innerHTML = "Người dùng này đã là bạn bè.";
-        return;
-      }
+        if (
+          uid.toLowerCase().includes(keyword) ||
+          name.includes(keyword) ||
+          email.includes(keyword)
+        ) {
+          const container = document.createElement("div");
+          container.className = "bg-white p-4 rounded shadow flex items-center justify-between";
 
-      // Kiểm tra đã gửi lời mời chưa
-      const sentRequestRef = doc(db, `friendRequests/${currentUser.uid}/sent`, userDoc.id);
-      const sentSnap = await getDoc(sentRequestRef);
-      if (sentSnap.exists()) {
-        searchResult.innerHTML = "Bạn đã gửi lời mời kết bạn.";
-        return;
-      }
-
-      // Hiển thị nút kết bạn
-      searchResult.innerHTML = `
-        <div class="bg-white p-4 rounded shadow">
-          <p class="font-semibold">${data.email}</p>
-          <button class="bg-green-500 text-white px-4 py-2 rounded mt-2" id="addFriendBtn">Kết bạn</button>
-        </div>
-      `;
-
-      document.getElementById("addFriendBtn").addEventListener("click", async () => {
-        // Lưu vào 2 collection: gửi và nhận
-        await setDoc(doc(db, `friendRequests/${userDoc.id}/requests`, currentUser.uid), {
-          uid: currentUser.uid,
-          email: currentUser.email,
-          createdAt: Date.now()
-        });
-        await setDoc(doc(db, `friendRequests/${currentUser.uid}/sent`, userDoc.id), {
-          uid: userDoc.id,
-          email: data.email,
-          createdAt: Date.now()
-        });
-        searchResult.innerHTML = "Đã gửi lời mời kết bạn.";
-      });
-    });
-
-    function loadFriendRequests() {
-      const q = collection(db, `friendRequests/${currentUser.uid}/requests`);
-      onSnapshot(q, (snapshot) => {
-        friendRequestsList.innerHTML = "";
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const item = document.createElement("div");
-          item.className = "bg-white p-4 rounded shadow flex justify-between items-center";
-          item.innerHTML = `
+          container.innerHTML = `
             <div>
-              <p class="font-semibold">${data.email}</p>
+              <p class="font-semibold">${data.name || "(Không có tên)"}</p>
+              <p>Email: ${data.email || "?"}</p>
+              <p>UID: ${uid}</p>
             </div>
-            <div class="flex gap-2">
-              <button class="accept-btn bg-blue-500 text-white px-3 py-1 rounded" data-uid="${data.uid}" data-email="${data.email}">Chấp nhận</button>
-              <button class="decline-btn bg-red-500 text-white px-3 py-1 rounded" data-uid="${data.uid}">Từ chối</button>
-            </div>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="sendFriendRequest('${uid}', this)">
+              Kết bạn
+            </button>
           `;
-          friendRequestsList.appendChild(item);
-        });
-
-        document.querySelectorAll(".accept-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const fromUid = btn.dataset.uid;
-            const fromEmail = btn.dataset.email;
-
-            // Lưu bạn bè 2 chiều
-            await setDoc(doc(db, `friends/${currentUser.uid}/list`, fromUid), {
-              uid: fromUid,
-              email: fromEmail
-            });
-            await setDoc(doc(db, `friends/${fromUid}/list`, currentUser.uid), {
-              uid: currentUser.uid,
-              email: currentUser.email
-            });
-
-            // Xoá lời mời
-            await deleteDoc(doc(db, `friendRequests/${currentUser.uid}/requests`, fromUid));
-            await deleteDoc(doc(db, `friendRequests/${fromUid}/sent`, currentUser.uid));
-          });
-        });
-
-        document.querySelectorAll(".decline-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const fromUid = btn.dataset.uid;
-            await deleteDoc(doc(db, `friendRequests/${currentUser.uid}/requests`, fromUid));
-            await deleteDoc(doc(db, `friendRequests/${fromUid}/sent`, currentUser.uid));
-          });
-        });
+          resultsDiv.appendChild(container);
+        }
       });
+    });
+
+    async function sendFriendRequest(targetUid, button) {
+      if (!currentUser || !targetUid) return;
+
+      // Kiểm tra đã gửi chưa
+      const ref = db
+        .collection("friendRequests")
+        .doc(targetUid)
+        .collection("requests")
+        .doc(currentUser.uid);
+
+      const existing = await ref.get();
+      if (existing.exists) {
+        alert("Đã gửi lời mời trước đó");
+        return;
+      }
+
+      // Gửi lời mời
+      await ref.set({
+        fromUid: currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Cập nhật danh sách lời mời đã gửi
+      await db
+        .collection("friendRequests")
+        .doc(currentUser.uid)
+        .collection("sent")
+        .doc(targetUid)
+        .set({
+          toUid: targetUid,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+      button.innerText = "Đã gửi ✅";
+      button.disabled = true;
+      button.classList.add("bg-gray-400");
     }
   </script>
 </body>
