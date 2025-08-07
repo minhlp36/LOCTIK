@@ -28,23 +28,23 @@
   </main>
 
   <!-- Điều hướng -->
-  <nav class="w-full bg-white border-t fixed bottom-0 left-0 flex justify-around py-2">
-    <button class="nav-btn active" onclick="goTo('feed.html')">
-      <span class="text-2xl">🏠</span>
-      <span>Trang chủ</span>
-    </button>
-    <button class="nav-btn" onclick="goTo('upload.html')">
-      <span class="text-2xl">➕</span>
-      <span>Đăng</span>
-    </button>
-    <button class="nav-btn" onclick="goTo('chat.html')">
-      <span class="text-2xl">💬</span>
-      <span>Nhắn tin</span>
-    </button>
-    <button class="nav-btn" onclick="goTo('account.html')">
-      <span class="text-2xl">👤</span>
-      <span>Tài khoản</span>
-    </button>
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around py-2">
+    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">🏠</span>
+      <span class="text-sm">Feed</span>
+    </a>
+    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">➕</span>
+      <span class="text-sm">Đăng</span>
+    </a>
+    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
+      <span class="text-xl">💬</span>
+      <span class="text-sm">Tin nhắn</span>
+    </a>
+    <a href="account.html" class="flex flex-col items-center text-blue-500 font-bold">
+      <span class="text-xl">👤</span>
+      <span class="text-sm">Tài khoản</span>
+    </a>
   </nav>
 
   <script>
