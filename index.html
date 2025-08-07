@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LokTik - Trang chính</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
+    <h1 class="text-2xl font-bold mb-4">Chào mừng đến LokTik! 🎉</h1>
+    <p id="userEmail" class="mb-4 text-gray-700"></p>
+    <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Đăng xuất</button>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
+      authDomain: "loktik-1d9af.firebaseapp.com",
+      projectId: "loktik-1d9af",
+      storageBucket: "loktik-1d9af.firebasestorage.app",
+      messagingSenderId: "801363229819",
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
+      measurementId: "G-S6HQ3HN7W3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Kiểm tra đăng nhập
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById("userEmail").textContent = "Bạn đang đăng nhập với: " + user.email;
+      } else {
+        window.location.href = "login.html"; // nếu chưa đăng nhập thì chuyển về login
+      }
+    });
+
+    // Xử lý đăng xuất
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      auth.signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    });
+  </script>
+</body>
+</html>
