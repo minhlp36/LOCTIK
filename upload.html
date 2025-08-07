@@ -97,7 +97,7 @@
 
       try {
         message.textContent = "⏳ Đang nén ảnh...";
-        // Nén ảnh (dưới 1MB và resize nếu cần)
+        // Nén ảnh
         const options = {
           maxSizeMB: 1,
           maxWidthOrHeight: 1080,
@@ -109,13 +109,15 @@
         const storageRef = storage.ref("images/" + fileName);
         const uploadTask = storageRef.put(compressedFile);
 
-        // Hiển thị tiến trình %
+        // Theo dõi tiến trình upload
         uploadTask.on("state_changed", 
           (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             message.textContent = `⏳ Đang tải ảnh... ${Math.round(progress)}%`;
+            console.log(`Progress: ${Math.round(progress)}%`);
           },
           (error) => {
+            console.error("Upload error:", error);
             message.textContent = "❌ Lỗi upload: " + error.message;
           },
           async () => {
@@ -134,12 +136,13 @@
 
             setTimeout(() => {
               window.location.href = "feed.html";
-            }, 2000);
+            }, 1500);
           }
         );
 
       } catch (err) {
-        message.textContent = "❌ Lỗi xử lý ảnh: " + err.message;
+        console.error("Compression error:", err);
+        message.textContent = "❌ Lỗi nén ảnh: " + err.message;
       }
     });
 
