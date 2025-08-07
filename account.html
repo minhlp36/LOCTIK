@@ -2,101 +2,131 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tài khoản của tôi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tài khoản - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4">
-  <div id="user-info" class="bg-white p-4 rounded shadow mb-6"></div>
+<body class="bg-gray-100 text-gray-800 pb-16">
 
-  <h2 class="text-xl font-bold mb-2">Bài viết của tôi</h2>
-  <div id="my-posts" class="space-y-4"></div>
+  <!-- Thông tin cá nhân -->
+  <div class="p-4 bg-white shadow flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold" id="userEmail">Đang tải...</h1>
+      <p class="text-sm text-gray-500" id="userUID"></p>
+    </div>
+    <div class="flex items-center gap-3">
+      <img id="userAvatar" src="https://via.placeholder.com/40" alt="Avatar" class="w-10 h-10 rounded-full">
+      <button onclick="logout()" class="text-red-500 font-semibold">Đăng xuất</button>
+    </div>
+  </div>
 
-  <button onclick="window.location.href='feed.html'"
-    class="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-    Quay lại
-  </button>
+  <!-- Bài viết của tôi -->
+  <div class="p-4">
+    <h2 class="text-lg font-semibold mb-2">📸 Bài viết của tôi</h2>
+    <div id="myPosts"></div>
+  </div>
 
+  <!-- Thanh điều hướng -->
+  <nav class="w-full bg-white border-t fixed bottom-0 left-0 flex justify-around py-2">
+    <button onclick="goTo('feed.html')" class="flex flex-col items-center text-sm text-gray-600 hover:text-blue-500">
+      <span class="text-xl">🏠</span><span>Trang chủ</span>
+    </button>
+    <button onclick="goTo('upload.html')" class="flex flex-col items-center text-sm text-gray-600 hover:text-blue-500">
+      <span class="text-xl">➕</span><span>Đăng</span>
+    </button>
+    <button onclick="goTo('chat.html')" class="flex flex-col items-center text-sm text-gray-600 hover:text-blue-500">
+      <span class="text-xl">💬</span><span>Nhắn tin</span>
+    </button>
+    <button class="flex flex-col items-center text-sm text-blue-500 font-semibold">
+      <span class="text-xl">👤</span><span>Tài khoản</span>
+    </button>
+  </nav>
+
+  <!-- Firebase & Script -->
   <script type="module">
-    // === KẾT NỐI FIREBASE ===
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
-      authDomain: "loktik-1d9af.firebaseapp.com",
-      projectId: "loktik-1d9af",
-      storageBucket: "loktik-1d9af.firebasestorage.app",
-      messagingSenderId: "801363229819",
-      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
-      measurementId: "G-S6HQ3HN7W3"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_MSG_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    // === KIỂM TRA ĐĂNG NHẬP ===
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const userEmail = document.getElementById("userEmail");
+    const userUID = document.getElementById("userUID");
+    const userAvatar = document.getElementById("userAvatar");
+    const myPostsDiv = document.getElementById("myPosts");
+
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    function logout() {
+      signOut(auth).then(() => {
         window.location.href = "login.html";
-        return;
-      }
+      });
+    }
 
-      // === HIỂN THỊ THÔNG TIN CÁ NHÂN ===
-      document.getElementById('user-info').innerHTML = `
-        <div class="flex items-center space-x-4">
-          <img src="${user.photoURL || 'https://via.placeholder.com/80'}" alt="Avatar" class="w-20 h-20 rounded-full">
-          <div>
-            <p class="font-bold">Email: ${user.email}</p>
-            <p>UID: ${user.uid}</p>
-          </div>
-        </div>
-      `;
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = "login.html";
+      userEmail.innerText = user.email;
+      userUID.innerText = user.uid;
 
-      // === LẤY BÀI VIẾT CỦA MÌNH ===
+      if (user.photoURL) userAvatar.src = user.photoURL;
+
       const q = query(collection(db, "posts"), where("uid", "==", user.uid));
       const querySnapshot = await getDocs(q);
-      const postList = document.getElementById("my-posts");
-      postList.innerHTML = "";
-
-      querySnapshot.forEach(docSnap => {
-        const post = docSnap.data();
+      querySnapshot.forEach(async (docSnap) => {
+        const data = docSnap.data();
         const postId = docSnap.id;
-        const postEl = document.createElement("div");
-        postEl.className = "bg-white p-4 rounded shadow";
+        const postDiv = document.createElement("div");
+        postDiv.className = "mb-4 p-3 border rounded shadow bg-white";
 
-        postEl.innerHTML = `
-          <img src="${post.imageURL}" class="w-full max-h-60 object-cover rounded mb-2">
-          <p class="mb-2">${post.text || ''}</p>
-          <button onclick="editPost('${postId}', \`${post.text || ''}\`)" class="bg-yellow-400 text-white px-3 py-1 rounded mr-2">Sửa</button>
-          <button onclick="deletePost('${postId}')" class="bg-red-500 text-white px-3 py-1 rounded">Xoá</button>
-        `;
-        postList.appendChild(postEl);
+        if (data.imageUrl) {
+          const img = document.createElement("img");
+          img.className = "w-full rounded mb-2";
+          try {
+            img.src = await getDownloadURL(ref(storage, data.imageUrl));
+          } catch {
+            img.src = "https://via.placeholder.com/300x200";
+          }
+          postDiv.appendChild(img);
+        }
+
+        const content = document.createElement("p");
+        content.innerText = data.text || "";
+        postDiv.appendChild(content);
+
+        const time = document.createElement("div");
+        time.className = "text-xs text-gray-500 mt-1";
+        time.innerText = new Date(data.timestamp?.toDate()).toLocaleString();
+        postDiv.appendChild(time);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "🗑️ Xoá";
+        deleteBtn.className = "mt-2 text-red-600 hover:underline block";
+        deleteBtn.onclick = async () => {
+          if (confirm("Xác nhận xoá bài viết?")) {
+            await deleteDoc(doc(db, "posts", postId));
+            postDiv.remove();
+          }
+        };
+        postDiv.appendChild(deleteBtn);
+
+        myPostsDiv.appendChild(postDiv);
       });
     });
-
-    // === XOÁ BÀI VIẾT ===
-    async function deletePost(postId) {
-      if (confirm("Bạn có chắc muốn xoá bài viết này không?")) {
-        await deleteDoc(doc(db, "posts", postId));
-        location.reload();
-      }
-    }
-
-    // === CHỈNH SỬA BÀI VIẾT ===
-    function editPost(postId, oldText) {
-      const newText = prompt("Nhập nội dung mới:", oldText);
-      if (newText !== null) {
-        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js").then(({ getFirestore, updateDoc, doc }) => {
-          const db = getFirestore();
-          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-            location.reload();
-          });
-        });
-      }
-    }
   </script>
 </body>
 </html>
