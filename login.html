@@ -9,34 +9,36 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded shadow-md w-full max-w-sm">
-    <h2 class="text-2xl font-bold text-center mb-4">LokTik</h2>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4">
 
-    <!-- Tabs -->
-    <div class="flex justify-center mb-4">
-      <button id="loginTab" class="px-4 py-2 bg-blue-500 text-white rounded-l">Đăng nhập</button>
-      <button id="registerTab" class="px-4 py-2 bg-gray-200 text-blue-500 rounded-r">Đăng ký</button>
+  <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-sm">
+    <h2 id="form-title" class="text-2xl font-bold mb-4 text-center">Đăng nhập LokTik</h2>
+
+    <!-- Đăng nhập -->
+    <form id="login-form" class="space-y-4">
+      <input type="email" id="login-email" placeholder="Email" class="w-full px-4 py-2 border rounded" required />
+      <input type="password" id="login-password" placeholder="Mật khẩu" class="w-full px-4 py-2 border rounded" required />
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng nhập</button>
+    </form>
+
+    <!-- Đăng ký -->
+    <form id="register-form" class="space-y-4 hidden mt-4">
+      <input type="text" id="register-name" placeholder="Tên hiển thị" class="w-full px-4 py-2 border rounded" required />
+      <input type="email" id="register-email" placeholder="Email" class="w-full px-4 py-2 border rounded" required />
+      <input type="password" id="register-password" placeholder="Mật khẩu" class="w-full px-4 py-2 border rounded" required />
+      <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
+    </form>
+
+    <!-- Chuyển tab -->
+    <div class="text-center mt-4">
+      <p>
+        <span id="toggle-form" class="text-blue-500 cursor-pointer hover:underline">Chưa có tài khoản? Đăng ký</span>
+      </p>
     </div>
 
-    <!-- Login Form -->
-    <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
-      <input type="password" id="loginPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
-      <button type="submit" id="loginBtn" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Đăng nhập</button>
-    </form>
-
-    <!-- Register Form -->
-    <form id="registerForm" class="hidden">
-      <input type="text" id="registerName" placeholder="Tên tài khoản" class="w-full mb-2 p-2 border rounded" required />
-      <input type="email" id="registerEmail" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
-      <input type="password" id="registerPassword" placeholder="Mật khẩu" class="w-full mb-4 p-2 border rounded" required />
-      <button type="submit" id="registerBtn" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Đăng ký</button>
-    </form>
-
-    <!-- Message -->
-    <p id="message" class="text-red-500 text-center mt-3"></p>
+    <p id="message" class="text-center mt-4 text-sm text-red-500"></p>
   </div>
 
   <script>
@@ -50,129 +52,77 @@
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
       measurementId: "G-S6HQ3HN7W3"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const message = document.getElementById('message');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
+    // DOM elements
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const toggle = document.getElementById("toggle-form");
+    const message = document.getElementById("message");
+    const title = document.getElementById("form-title");
 
-    // Chuyển tab
-    loginTab.addEventListener('click', () => {
-      loginForm.classList.remove('hidden');
-      registerForm.classList.add('hidden');
-      loginTab.classList.add('bg-blue-500', 'text-white');
-      loginTab.classList.remove('bg-gray-200', 'text-blue-500');
-      registerTab.classList.add('bg-gray-200', 'text-blue-500');
-      registerTab.classList.remove('bg-green-500', 'text-white');
-      message.textContent = '';
+    // Toggle giữa login / register
+    toggle.addEventListener("click", () => {
+      if (loginForm.classList.contains("hidden")) {
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        title.textContent = "Đăng nhập LokTik";
+        toggle.textContent = "Chưa có tài khoản? Đăng ký";
+      } else {
+        loginForm.classList.add("hidden");
+        registerForm.classList.remove("hidden");
+        title.textContent = "Đăng ký LokTik";
+        toggle.textContent = "Đã có tài khoản? Đăng nhập";
+      }
+      message.textContent = "";
     });
 
-    registerTab.addEventListener('click', () => {
-      loginForm.classList.add('hidden');
-      registerForm.classList.remove('hidden');
-      registerTab.classList.add('bg-green-500', 'text-white');
-      registerTab.classList.remove('bg-gray-200', 'text-blue-500');
-      loginTab.classList.add('bg-gray-200', 'text-blue-500');
-      loginTab.classList.remove('bg-blue-500', 'text-white');
-      message.textContent = '';
-    });
-
-    // Đăng nhập
-    loginForm.addEventListener('submit', (e) => {
+    // Xử lý đăng nhập
+    loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      loginBtn.disabled = true;
-      message.textContent = 'Đang đăng nhập...';
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
 
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          message.textContent = '';
-          alert("Đăng nhập thành công!");
-          window.location.href = 'index.html';
+          window.location.href = "feed.html";
         })
         .catch((error) => {
-          let msg = '';
-          switch (error.code) {
-            case 'auth/invalid-email':
-              msg = 'Email không hợp lệ.';
-              break;
-            case 'auth/user-not-found':
-              msg = 'Không tìm thấy tài khoản.';
-              break;
-            case 'auth/wrong-password':
-              msg = 'Sai mật khẩu.';
-              break;
-            default:
-              msg = 'Lỗi: ' + error.message;
-          }
-          message.textContent = msg;
-        })
-        .finally(() => {
-          loginBtn.disabled = false;
+          message.textContent = "Sai email hoặc mật khẩu.";
         });
     });
 
-    // Đăng ký
-    registerForm.addEventListener('submit', (e) => {
+    // Xử lý đăng ký và lưu Firestore
+    registerForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const name = document.getElementById('registerName').value;
-      const email = document.getElementById('registerEmail').value;
-      const password = document.getElementById('registerPassword').value;
-
-      if (password.length < 6) {
-        message.textContent = 'Mật khẩu phải có ít nhất 6 ký tự.';
-        return;
-      }
-
-      registerBtn.disabled = true;
-      message.textContent = 'Đang đăng ký...';
+      const name = document.getElementById("register-name").value;
+      const email = document.getElementById("register-email").value;
+      const password = document.getElementById("register-password").value;
 
       auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          return userCredential.user.updateProfile({
-            displayName: name
-          });
+          const user = userCredential.user;
+          return user.updateProfile({ displayName: name })
+            .then(() => {
+              return db.collection("users").doc(user.uid).set({
+                uid: user.uid,
+                email: user.email,
+                displayName: name,
+                photoURL: user.photoURL || "",
+                createdAt: new Date().toISOString()
+              });
+            });
         })
         .then(() => {
-          message.textContent = 'Đăng ký thành công! Hãy đăng nhập.';
+          message.textContent = "Đăng ký thành công! Hãy đăng nhập.";
           registerForm.reset();
-          loginTab.click(); // chuyển sang tab đăng nhập
+          toggle.click(); // Chuyển sang tab login
         })
         .catch((error) => {
-          let msg = '';
-          switch (error.code) {
-            case 'auth/invalid-email':
-              msg = 'Email không hợp lệ.';
-              break;
-            case 'auth/email-already-in-use':
-              msg = 'Email đã được đăng ký.';
-              break;
-            case 'auth/weak-password':
-              msg = 'Mật khẩu quá yếu. Phải có ít nhất 6 ký tự.';
-              break;
-            default:
-              msg = 'Lỗi: ' + error.message;
-          }
-          message.textContent = msg;
-        })
-        .finally(() => {
-          registerBtn.disabled = false;
+          message.textContent = "Đăng ký thất bại: " + error.message;
         });
-    });
-
-    // Nếu đã đăng nhập → chuyển về trang chính
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        window.location.href = 'index.html';
-      }
     });
   </script>
 </body>
