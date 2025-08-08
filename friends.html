@@ -205,13 +205,15 @@
           };
         }
 
-        div.innerHTML = `
-          <div>
-            <p class="font-semibold">${data.displayName || "Không tên"}</p>
-            <p class="text-sm text-gray-500">${data.email}</p>
-          </div>
-        `;
-        div.appendChild(btn);
+        const infoDiv = document.createElement("div");
+infoDiv.innerHTML = `
+  <p class="font-semibold">${data.displayName || "Không tên"}</p>
+  <p class="text-sm text-gray-500">${data.email}</p>
+`;
+
+div.appendChild(infoDiv);
+div.appendChild(btn);
+
         searchResultEl.appendChild(div);
       }
     }
