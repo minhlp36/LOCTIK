@@ -150,53 +150,76 @@ html_content = """<!DOCTYPE html>
     }
 
     async function searchUser() {
-      const input = document.getElementById("searchInput").value.trim().toLowerCase();
-      const searchResult = document.getElementById("searchResult");
-      searchResult.innerHTML = "";
+  const keyword = document.getElementById("searchInput").value.trim();
+  if (!keyword) return;
 
-      if (!input) return (searchResult.innerHTML = "Nhập từ khoá tìm kiếm");
+  searchResult.innerHTML = "Đang tìm...";
 
-      const snapshot = await db.collection("users").get();
-      let found = false;
+  const currentUser = auth.currentUser;
+  let querySnapshot;
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const uid = doc.id;
+  if (keyword.includes("@")) {
+    querySnapshot = await db.collection("users").where("email", "==", keyword).get();
+  } else {
+    querySnapshot = await db.collection("users").where("displayName", "==", keyword).get();
+  }
 
-        if (
-          uid === input ||
-          data.email?.toLowerCase() === input ||
-          data.displayName?.toLowerCase().includes(input)
-        ) {
-          if (uid === currentUser.uid) return;
+  if (querySnapshot.empty) {
+    searchResult.innerHTML = "Không tìm thấy người dùng.";
+    return;
+  }
 
-          found = true;
-          const div = document.createElement("div");
-          div.className = "flex justify-between items-center bg-gray-50 p-2 rounded";
+  searchResult.innerHTML = "";
+  querySnapshot.forEach(async (doc) => {
+    const data = doc.data();
+    const uid = doc.id;
 
-          div.innerHTML = `
-            <div>
-              <p class="font-semibold">${data.displayName || "Không tên"}</p>
-              <p class="text-sm text-gray-500">${data.email}</p>
-            </div>
-            <button class="bg-blue-500 text-white px-3 py-1 rounded">Kết bạn</button>
-          `;
+    if (uid === currentUser.uid) return; // Không tìm chính mình
 
-          div.querySelector("button").addEventListener("click", async () => {
-            await db.collection("friend_requests").add({
-              from: currentUser.uid,
-              to: uid,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+    const div = document.createElement("div");
+    div.className = "flex items-center justify-between bg-white p-2 rounded shadow mb-2";
 
-            alert("Đã gửi lời mời kết bạn.");
-            searchResult.innerHTML = "";
-            document.getElementById("searchInput").value = "";
-          });
+    div.innerHTML = `
+      <div>
+        <p class="font-semibold">${data.displayName || "Không tên"}</p>
+        <p class="text-sm text-gray-500">${data.email}</p>
+      </div>
+      <button class="bg-blue-500 text-white px-3 py-1 rounded">Kết bạn</button>
+    `;
 
-          searchResult.appendChild(div);
-        }
-      });
+    const button = div.querySelector("button");
+
+    // Kiểm tra đã gửi lời mời chưa
+    const check = await db.collection("friend_requests")
+      .where("from", "==", currentUser.uid)
+      .where("to", "==", uid)
+      .get();
+
+    if (!check.empty) {
+      button.textContent = "✅ Đã gửi lời mời";
+      button.disabled = true;
+    }
+
+    button.addEventListener("click", async () => {
+      try {
+        // Gửi lời mời
+        await db.collection("friend_requests").add({
+          from: currentUser.uid,
+          to: uid,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        button.textContent = "✅ Đã gửi lời mời";
+        button.disabled = true;
+      } catch (e) {
+        console.error("Lỗi gửi lời mời:", e);
+        alert("Gửi lời mời thất bại!");
+      }
+    });
+
+    searchResult.appendChild(div);
+  });
+}
 
       if (!found) {
         searchResult.innerHTML = "<p class='text-gray-500'>Không tìm thấy người dùng.</p>";
