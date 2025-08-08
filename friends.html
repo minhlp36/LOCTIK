@@ -153,29 +153,33 @@ html_content = """<!DOCTYPE html>
   const keyword = document.getElementById("searchInput").value.trim();
   if (!keyword) return;
 
+  if (!currentUser) return alert("Không xác định được người dùng.");
+
+  const searchResult = document.getElementById("searchResult");
   searchResult.innerHTML = "Đang tìm...";
 
-  const currentUser = auth.currentUser;
-  let querySnapshot;
+  const usersSnap = await db.collection("users").get();
+  const matchedUsers = [];
 
-  if (keyword.includes("@")) {
-    querySnapshot = await db.collection("users").where("email", "==", keyword).get();
-  } else {
-    querySnapshot = await db.collection("users").where("displayName", "==", keyword).get();
-  }
+  usersSnap.forEach(doc => {
+    const data = doc.data();
+    if (
+      (data.email && data.email.toLowerCase().includes(keyword.toLowerCase())) ||
+      (data.displayName && data.displayName.toLowerCase().includes(keyword.toLowerCase()))
+    ) {
+      if (doc.id !== currentUser.uid) {
+        matchedUsers.push({ id: doc.id, data });
+      }
+    }
+  });
 
-  if (querySnapshot.empty) {
-    searchResult.innerHTML = "Không tìm thấy người dùng.";
+  if (matchedUsers.length === 0) {
+    searchResult.innerHTML = "<p class='text-gray-500'>Không tìm thấy người dùng.</p>";
     return;
   }
 
   searchResult.innerHTML = "";
-  querySnapshot.forEach(async (doc) => {
-    const data = doc.data();
-    const uid = doc.id;
-
-    if (uid === currentUser.uid) return; // Không tìm chính mình
-
+  for (const { id: uid, data } of matchedUsers) {
     const div = document.createElement("div");
     div.className = "flex items-center justify-between bg-white p-2 rounded shadow mb-2";
 
@@ -189,7 +193,6 @@ html_content = """<!DOCTYPE html>
 
     const button = div.querySelector("button");
 
-    // Kiểm tra đã gửi lời mời chưa
     const check = await db.collection("friend_requests")
       .where("from", "==", currentUser.uid)
       .where("to", "==", uid)
@@ -202,7 +205,6 @@ html_content = """<!DOCTYPE html>
 
     button.addEventListener("click", async () => {
       try {
-        // Gửi lời mời
         await db.collection("friend_requests").add({
           from: currentUser.uid,
           to: uid,
@@ -218,13 +220,9 @@ html_content = """<!DOCTYPE html>
     });
 
     searchResult.appendChild(div);
-  });
+  }
 }
 
-      if (!found) {
-        searchResult.innerHTML = "<p class='text-gray-500'>Không tìm thấy người dùng.</p>";
-      }
-    }
   </script>
 </body>
 </html>
