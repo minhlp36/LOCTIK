@@ -1,40 +1,43 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LokTik - Bạn bè</title>
+  <title>Bạn bè - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-gray-100 p-4">
+<body class="bg-gray-100 p-4 min-h-screen">
 
-  <h1 class="text-2xl font-bold mb-4">👥 Bạn bè của bạn</h1>
+  <h1 class="text-2xl font-bold mb-4 text-center">👥 Quản lý bạn bè</h1>
 
-  <!-- Tìm bạn bè -->
-  <div class="bg-white p-4 rounded shadow mb-6 max-h-64 overflow-y-auto">
-    <h2 class="text-lg font-semibold mb-2">Tìm kiếm người dùng</h2>
-    <input id="searchInput" type="text" placeholder="Nhập email hoặc tên..."
-           class="w-full px-3 py-2 border rounded mb-2" />
-    <button onclick="searchUser()" class="bg-blue-500 text-white px-4 py-2 rounded">Tìm</button>
-    <div id="searchResult" class="mt-3 space-y-2"></div>
+  <!-- TÌM KIẾM NGƯỜI DÙNG -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <h2 class="text-lg font-semibold mb-2">🔍 Tìm người dùng</h2>
+    <input id="searchInput" type="text" placeholder="Nhập tên hoặc email..." class="w-full border p-2 rounded mb-2">
+    <button onclick="searchUser()" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Tìm</button>
+    <div id="searchResult" class="mt-4 space-y-2"></div>
   </div>
 
-  <!-- Danh sách bạn bè -->
-  <div class="bg-white p-4 rounded shadow mb-6 max-h-64 overflow-y-auto">
-    <h2 class="text-lg font-semibold mb-2">Danh sách bạn bè</h2>
-    <div id="friend-count" class="mb-2 text-gray-600"></div>
+  <!-- DANH SÁCH BẠN BÈ -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <h2 class="text-lg font-semibold mb-2">🧑‍🤝‍🧑 Danh sách bạn bè</h2>
     <div id="friend-list" class="space-y-2"></div>
   </div>
 
-  <!-- Lời mời kết bạn -->
-  <div class="bg-white p-4 rounded shadow max-h-64 overflow-y-auto">
-    <h2 class="text-lg font-semibold mb-2">Lời mời kết bạn</h2>
+  <!-- LỜI MỜI ĐÃ NHẬN -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <h2 class="text-lg font-semibold mb-2">📩 Lời mời kết bạn</h2>
     <div id="request-list" class="space-y-2"></div>
+  </div>
+
+  <!-- LỜI MỜI ĐÃ GỬI -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <h2 class="text-lg font-semibold mb-2">📤 Đã gửi lời mời</h2>
+    <div id="sent-requests" class="space-y-2"></div>
   </div>
 
   <script>
@@ -44,52 +47,40 @@ html_content = """<!DOCTYPE html>
       projectId: "loktik-1d9af",
       storageBucket: "loktik-1d9af.appspot.com",
       messagingSenderId: "801363229819",
-      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
-      measurementId: "G-S6HQ3HN7W3"
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    let currentUser;
     const friendListEl = document.getElementById("friend-list");
     const requestListEl = document.getElementById("request-list");
-    const friendCountEl = document.getElementById("friend-count");
-
-    let currentUser;
+    const sentRequestsEl = document.getElementById("sent-requests");
+    const searchResultEl = document.getElementById("searchResult");
 
     auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        alert("Bạn cần đăng nhập.");
-        window.location.href = "login.html";
-        return;
-      }
-
+      if (!user) return location.href = "login.html";
       currentUser = user;
       loadFriends();
       loadFriendRequests();
+      loadSentRequests();
     });
 
     async function loadFriends() {
-      const userRef = db.collection("users").doc(currentUser.uid);
-      const userSnap = await userRef.get();
-      const userData = userSnap.data();
-
-      const friends = userData.friends || [];
-
-      friendListEl.innerHTML = "";
-      friendCountEl.textContent = `Tổng số bạn bè: ${friends.length}`;
+      const snap = await db.collection("users").doc(currentUser.uid).get();
+      const friends = snap.data().friends || [];
 
       if (friends.length === 0) {
-        friendListEl.innerHTML = `<p class="text-gray-500">Chưa có bạn bè nào.</p>`;
+        friendListEl.innerHTML = "<p class='text-gray-500'>Chưa có bạn bè nào.</p>";
         return;
       }
 
-      const usersSnap = await db.collection("users")
-        .where(firebase.firestore.FieldPath.documentId(), "in", friends)
-        .get();
+      const users = await db.collection("users").where(firebase.firestore.FieldPath.documentId(), "in", friends).get();
+      friendListEl.innerHTML = "";
 
-      usersSnap.forEach(doc => {
+      users.forEach(doc => {
         const data = doc.data();
         const div = document.createElement("div");
         div.className = "flex justify-between items-center bg-gray-50 p-2 rounded";
@@ -98,131 +89,147 @@ html_content = """<!DOCTYPE html>
             <p class="font-semibold">${data.displayName || "Không tên"}</p>
             <p class="text-sm text-gray-500">${data.email}</p>
           </div>
+          <div class="flex gap-2">
+            <button class="bg-green-500 text-white px-3 py-1 rounded" onclick="messageUser('${doc.id}')">Nhắn tin</button>
+            <button class="bg-red-500 text-white px-3 py-1 rounded" onclick="unfriend('${doc.id}')">Huỷ</button>
+          </div>
         `;
         friendListEl.appendChild(div);
       });
     }
 
     async function loadFriendRequests() {
-      const snapshot = await db.collection("friend_requests")
-        .where("to", "==", currentUser.uid)
-        .get();
+      const snap = await db.collection("friend_requests").where("to", "==", currentUser.uid).get();
+      requestListEl.innerHTML = snap.empty ? "<p class='text-gray-500'>Không có lời mời.</p>" : "";
 
-      requestListEl.innerHTML = "";
-
-      if (snapshot.empty) {
-        requestListEl.innerHTML = `<p class="text-gray-500">Không có lời mời nào.</p>`;
-        return;
-      }
-
-      for (const doc of snapshot.docs) {
+      for (const doc of snap.docs) {
         const data = doc.data();
-        const fromUserSnap = await db.collection("users").doc(data.from).get();
-        const fromUser = fromUserSnap.data();
-
+        const user = await db.collection("users").doc(data.from).get();
+        const u = user.data();
         const div = document.createElement("div");
         div.className = "flex justify-between items-center bg-gray-50 p-2 rounded";
-
         div.innerHTML = `
           <div>
-            <p class="font-semibold">${fromUser.displayName || "Không tên"}</p>
-            <p class="text-sm text-gray-500">${fromUser.email}</p>
+            <p class="font-semibold">${u.displayName || "Không tên"}</p>
+            <p class="text-sm text-gray-500">${u.email}</p>
           </div>
-          <button class="bg-green-500 text-white px-3 py-1 rounded accept-btn">Chấp nhận</button>
+          <button class="bg-blue-500 text-white px-3 py-1 rounded">Chấp nhận</button>
         `;
-
-        div.querySelector(".accept-btn").addEventListener("click", async () => {
+        div.querySelector("button").onclick = async () => {
           await db.collection("users").doc(currentUser.uid).update({
             friends: firebase.firestore.FieldValue.arrayUnion(data.from)
           });
           await db.collection("users").doc(data.from).update({
             friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
           });
-
           await db.collection("friend_requests").doc(doc.id).delete();
-
-          loadFriends();
-          loadFriendRequests();
-        });
-
+          loadFriends(); loadFriendRequests();
+        };
         requestListEl.appendChild(div);
       }
     }
 
+    async function loadSentRequests() {
+      const snap = await db.collection("friend_requests").where("from", "==", currentUser.uid).get();
+      sentRequestsEl.innerHTML = snap.empty ? "<p class='text-gray-500'>Không có lời mời đã gửi.</p>" : "";
+
+      for (const doc of snap.docs) {
+        const data = doc.data();
+        const user = await db.collection("users").doc(data.to).get();
+        const u = user.data();
+        const div = document.createElement("div");
+        div.className = "flex justify-between items-center bg-gray-50 p-2 rounded";
+        div.innerHTML = `
+          <div>
+            <p class="font-semibold">${u.displayName || "Không tên"}</p>
+            <p class="text-sm text-gray-500">${u.email}</p>
+          </div>
+          <button class="bg-red-500 text-white px-3 py-1 rounded">Huỷ</button>
+        `;
+        div.querySelector("button").onclick = async () => {
+          await db.collection("friend_requests").doc(doc.id).delete();
+          loadSentRequests();
+        };
+        sentRequestsEl.appendChild(div);
+      }
+    }
+
     async function searchUser() {
-  const keyword = document.getElementById("searchInput").value.trim();
-  if (!keyword) return;
+      const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+      if (!keyword) return;
+      searchResultEl.innerHTML = "Đang tìm...";
 
-  if (!currentUser) return alert("Không xác định được người dùng.");
+      const allUsers = await db.collection("users").get();
+      const currentUserSnap = await db.collection("users").doc(currentUser.uid).get();
+      const friends = currentUserSnap.data().friends || [];
 
-  const searchResult = document.getElementById("searchResult");
-  searchResult.innerHTML = "Đang tìm...";
+      const results = [];
+      allUsers.forEach(doc => {
+        const data = doc.data();
+        if (
+          doc.id !== currentUser.uid &&
+          (
+            (data.displayName && data.displayName.toLowerCase().includes(keyword)) ||
+            (data.email && data.email.toLowerCase().includes(keyword))
+          )
+        ) results.push({ id: doc.id, data });
+      });
 
-  const usersSnap = await db.collection("users").get();
-  const matchedUsers = [];
+      searchResultEl.innerHTML = results.length === 0 ? "<p class='text-gray-500'>Không tìm thấy người dùng.</p>" : "";
 
-  usersSnap.forEach(doc => {
-    const data = doc.data();
-    if (
-      (data.email && data.email.toLowerCase().includes(keyword.toLowerCase())) ||
-      (data.displayName && data.displayName.toLowerCase().includes(keyword.toLowerCase()))
-    ) {
-      if (doc.id !== currentUser.uid) {
-        matchedUsers.push({ id: doc.id, data });
+      for (const { id, data } of results) {
+        const isFriend = friends.includes(id);
+        const sent = await db.collection("friend_requests").where("from", "==", currentUser.uid).where("to", "==", id).get();
+        const div = document.createElement("div");
+        div.className = "flex justify-between items-center bg-gray-50 p-2 rounded";
+        const btn = document.createElement("button");
+        btn.className = "bg-blue-500 text-white px-3 py-1 rounded";
+
+        if (isFriend) {
+          btn.textContent = "✅ Đã là bạn";
+          btn.disabled = true;
+        } else if (!sent.empty) {
+          btn.textContent = "📨 Đã gửi";
+          btn.disabled = true;
+        } else {
+          btn.textContent = "Kết bạn";
+          btn.onclick = async () => {
+            await db.collection("friend_requests").add({
+              from: currentUser.uid,
+              to: id,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            btn.textContent = "📨 Đã gửi";
+            btn.disabled = true;
+            loadSentRequests();
+          };
+        }
+
+        div.innerHTML = `
+          <div>
+            <p class="font-semibold">${data.displayName || "Không tên"}</p>
+            <p class="text-sm text-gray-500">${data.email}</p>
+          </div>
+        `;
+        div.appendChild(btn);
+        searchResultEl.appendChild(div);
       }
     }
-  });
 
-  if (matchedUsers.length === 0) {
-    searchResult.innerHTML = "<p class='text-gray-500'>Không tìm thấy người dùng.</p>";
-    return;
-  }
-
-  searchResult.innerHTML = "";
-  for (const { id: uid, data } of matchedUsers) {
-    const div = document.createElement("div");
-    div.className = "flex items-center justify-between bg-white p-2 rounded shadow mb-2";
-
-    div.innerHTML = `
-      <div>
-        <p class="font-semibold">${data.displayName || "Không tên"}</p>
-        <p class="text-sm text-gray-500">${data.email}</p>
-      </div>
-      <button class="bg-blue-500 text-white px-3 py-1 rounded">Kết bạn</button>
-    `;
-
-    const button = div.querySelector("button");
-
-    const check = await db.collection("friend_requests")
-      .where("from", "==", currentUser.uid)
-      .where("to", "==", uid)
-      .get();
-
-    if (!check.empty) {
-      button.textContent = "✅ Đã gửi lời mời";
-      button.disabled = true;
+    function messageUser(uid) {
+      location.href = `chat.html?uid=${uid}`;
     }
 
-    button.addEventListener("click", async () => {
-      try {
-        await db.collection("friend_requests").add({
-          from: currentUser.uid,
-          to: uid,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        button.textContent = "✅ Đã gửi lời mời";
-        button.disabled = true;
-      } catch (e) {
-        console.error("Lỗi gửi lời mời:", e);
-        alert("Gửi lời mời thất bại!");
-      }
-    });
-
-    searchResult.appendChild(div);
-  }
-}
-
+    async function unfriend(friendUid) {
+      if (!confirm("Bạn có chắc muốn huỷ kết bạn?")) return;
+      await db.collection("users").doc(currentUser.uid).update({
+        friends: firebase.firestore.FieldValue.arrayRemove(friendUid)
+      });
+      await db.collection("users").doc(friendUid).update({
+        friends: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+      });
+      loadFriends();
+    }
   </script>
 </body>
 </html>
