@@ -67,7 +67,7 @@
         <form id="modalCommentForm" class="p-3 border-t bg-gray-50 flex items-center gap-2">
             <img id="myAvatarSmall" src="" class="w-8 h-8 rounded-full border">
             <div class="flex-1 bg-white rounded-full border border-gray-300 px-4 py-2 flex items-center">
-                <input type="text" id="modalCommentInput" placeholder="Thêm bình luận..." class="w-full outline-none text-sm bg-transparent">
+                <input type="text" id="modalCommentInput" placeholder="Thêm bình luận..." class="w-full outline-none text-sm bg-transparent" autocomplete="off">
             </div>
             <button type="submit" class="text-blue-600 font-bold text-sm p-2 hover:bg-blue-50 rounded-full transition">Gửi</button>
         </form>
@@ -75,12 +75,21 @@
   </div>
 
   <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
+    
     <a href="feed.html" class="flex flex-col items-center text-black transition group">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
         <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
         <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
       </svg>
       <span class="text-[10px] font-medium mt-1">Trang chủ</span>
+    </a>
+
+    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
+            <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
+            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
+          </svg>
+      <span class="text-[10px] font-medium mt-1">Bạn bè</span>
     </a>
     
     <a href="upload.html" class="flex flex-col items-center group">
@@ -91,14 +100,6 @@
             <span class="text-black font-bold text-xl leading-none mb-0.5">+</span>
         </div>
       </div>
-    </a>
-
-    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
-            <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
-            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
-          </svg>
-      <span class="text-[10px] font-medium mt-1">Bạn bè</span>
     </a>
 
     <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
@@ -164,23 +165,22 @@
     const modalCommentInput = document.getElementById("modalCommentInput");
     const myAvatarSmall = document.getElementById("myAvatarSmall");
     
-    let activePostId = null; // ID bài viết đang mở comment
-    let unsubscribeComments = null; // Dùng để huỷ lắng nghe khi đóng modal
+    let activePostId = null; 
+    let unsubscribeComments = null;
 
     // Global toggle functions
     window.closeCommentModal = () => {
         commentModalOverlay.classList.add("hidden");
         activePostId = null;
-        if(unsubscribeComments) unsubscribeComments(); // Stop listening
+        if(unsubscribeComments) unsubscribeComments(); 
     };
 
     onAuthStateChanged(auth, user => {
       if (!user) return (window.location.href = "login.html");
       
-      // Set avatar for comment input
       myAvatarSmall.src = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
 
-      // Bắt đầu lắng nghe Feed
+      // Lắng nghe Feed
       const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
       
       onSnapshot(postsQuery, (snapshot) => {
@@ -202,7 +202,7 @@
         });
       });
 
-      // Handle Submit Comment in Modal
+      // Handle Submit Comment Modal
       modalCommentForm.onsubmit = async (e) => {
           e.preventDefault();
           const text = modalCommentInput.value.trim();
@@ -217,7 +217,6 @@
                   createdAt: serverTimestamp()
               });
               modalCommentInput.value = "";
-              // Scroll to bottom
               setTimeout(() => {
                   modalCommentsList.scrollTop = modalCommentsList.scrollHeight;
               }, 100);
@@ -263,9 +262,7 @@
                   <p class="text-xs text-gray-500 mt-1">${time}</p>
                </div>
             </div>
-            <button class="text-gray-400 hover:text-black p-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
-            </button>
+            <button class="text-gray-400 hover:text-black p-2">•••</button>
           </div>
 
           ${caption ? `<div class="px-3 pb-2 text-sm text-slate-800 break-words">${caption}</div>` : ''}
@@ -303,7 +300,7 @@
 
           <div class="px-3 pb-3">
              <div class="comment-preview text-sm text-gray-500 mb-1">
-                </div>
+             </div>
              <p class="text-gray-400 text-xs cursor-pointer btn-view-all font-medium py-1">Xem tất cả bình luận...</p>
              
              <div class="flex items-center gap-2 mt-2">
@@ -315,9 +312,7 @@
         
         feedContainer.appendChild(postEl);
 
-        // --- EVENTS ---
-        
-        // 1. LIKE
+        // --- LIKE LOGIC ---
         const likeBtn = postEl.querySelector(".btn-like");
         const heartIcon = postEl.querySelector(".icon-heart");
         const likeCountEl = postEl.querySelector(".text-likes-count");
@@ -350,15 +345,17 @@
             }
         };
 
-        // 2. OPEN COMMENT MODAL (Logic mới)
+        // --- COMMENT MODAL LOGIC (ĐÃ SỬA) ---
         const openModalBtns = postEl.querySelectorAll(".btn-open-modal, .btn-view-all");
         openModalBtns.forEach(btn => {
             btn.onclick = () => {
+                if(unsubscribeComments) unsubscribeComments(); // Clear old listener
+
                 activePostId = postId;
                 commentModalOverlay.classList.remove("hidden");
                 modalCommentsList.innerHTML = `<div class="text-center py-4 text-gray-400">Đang tải...</div>`;
 
-                // Real-time listener for ALL comments in this post
+                // Real-time listener
                 const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
                 
                 unsubscribeComments = onSnapshot(q, (snapshot) => {
@@ -387,6 +384,9 @@
                         `;
                         modalCommentsList.appendChild(cmtDiv);
                     });
+                    
+                    // Auto scroll to bottom on new comment
+                    modalCommentsList.scrollTop = modalCommentsList.scrollHeight;
                 });
             };
         });
