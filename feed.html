@@ -17,16 +17,23 @@
       100% { transform: scale(1); }
     }
     .animate-heart { animation: heart-beat 0.3s ease-in-out; }
+
+    /* Hiệu ứng Modal trượt lên */
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
   </style>
 </head>
 <body class="bg-gray-50 text-slate-900 pb-20">
 
-  <header class="sticky top-0 bg-white/90 backdrop-blur-md z-30 border-b border-gray-100 px-4 py-3 flex justify-between items-center max-w-md mx-auto">
-    <h1 class="font-black text-2xl tracking-tighter flex items-center gap-1">
+  <header class="sticky top-0 bg-white/95 backdrop-blur-md z-30 border-b border-gray-100 px-4 py-3 flex justify-between items-center max-w-md mx-auto shadow-sm">
+    <h1 class="font-black text-2xl tracking-tighter flex items-center gap-1 cursor-pointer" onclick="window.scrollTo(0,0)">
       <span class="text-black">Lok</span><span class="text-blue-500">Tik</span>
     </h1>
     <a href="chat.html" class="relative p-2 hover:bg-gray-100 rounded-full transition">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
       </svg>
     </a>
@@ -43,6 +50,29 @@
       </div>
     </div>
   </main>
+
+  <div id="commentModalOverlay" class="fixed inset-0 bg-black/50 z-50 hidden transition-opacity">
+    <div id="commentModal" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl h-[75vh] flex flex-col shadow-2xl animate-slide-up max-w-md mx-auto">
+        
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="font-bold text-center flex-1">Bình luận</h3>
+            <button onclick="closeCommentModal()" class="text-gray-500 hover:text-black p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div id="modalCommentsList" class="flex-1 overflow-y-auto p-4 space-y-4">
+            </div>
+
+        <form id="modalCommentForm" class="p-3 border-t bg-gray-50 flex items-center gap-2">
+            <img id="myAvatarSmall" src="" class="w-8 h-8 rounded-full border">
+            <div class="flex-1 bg-white rounded-full border border-gray-300 px-4 py-2 flex items-center">
+                <input type="text" id="modalCommentInput" placeholder="Thêm bình luận..." class="w-full outline-none text-sm bg-transparent">
+            </div>
+            <button type="submit" class="text-blue-600 font-bold text-sm p-2 hover:bg-blue-50 rounded-full transition">Gửi</button>
+        </form>
+    </div>
+  </div>
 
   <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
     <a href="feed.html" class="flex flex-col items-center text-black transition group">
@@ -63,6 +93,14 @@
       </div>
     </a>
 
+    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
+            <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
+            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
+          </svg>
+      <span class="text-[10px] font-medium mt-1">Bạn bè</span>
+    </a>
+
     <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
             <path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" />
@@ -79,7 +117,6 @@
   </nav>
 
   <script type="module">
-    // Helper Time Ago
     function timeAgo(date) {
         if (!date) return "vừa xong";
         const seconds = Math.floor((new Date() - date) / 1000);
@@ -119,18 +156,35 @@
 
     const feedContainer = document.getElementById("feedContainer");
     const loadingSkeleton = document.getElementById("loadingSkeleton");
+    
+    // Modal Elements
+    const commentModalOverlay = document.getElementById("commentModalOverlay");
+    const modalCommentsList = document.getElementById("modalCommentsList");
+    const modalCommentForm = document.getElementById("modalCommentForm");
+    const modalCommentInput = document.getElementById("modalCommentInput");
+    const myAvatarSmall = document.getElementById("myAvatarSmall");
+    
+    let activePostId = null; // ID bài viết đang mở comment
+    let unsubscribeComments = null; // Dùng để huỷ lắng nghe khi đóng modal
+
+    // Global toggle functions
+    window.closeCommentModal = () => {
+        commentModalOverlay.classList.add("hidden");
+        activePostId = null;
+        if(unsubscribeComments) unsubscribeComments(); // Stop listening
+    };
 
     onAuthStateChanged(auth, user => {
       if (!user) return (window.location.href = "login.html");
       
+      // Set avatar for comment input
+      myAvatarSmall.src = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
+
       // Bắt đầu lắng nghe Feed
       const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
       
       onSnapshot(postsQuery, (snapshot) => {
         loadingSkeleton.style.display = "none";
-        
-        // Lưu ý: Không xoá innerHTML ngay để tránh nháy trang,
-        // Nhưng ở demo đơn giản ta xoá để render lại cho dễ quản lý
         feedContainer.innerHTML = "";
 
         if (snapshot.empty) {
@@ -147,26 +201,48 @@
             renderPost(docSnap, user);
         });
       });
+
+      // Handle Submit Comment in Modal
+      modalCommentForm.onsubmit = async (e) => {
+          e.preventDefault();
+          const text = modalCommentInput.value.trim();
+          if(!text || !activePostId) return;
+
+          try {
+              await addDoc(collection(db, "posts", activePostId, "comments"), {
+                  text,
+                  uid: user.uid,
+                  displayName: user.displayName || user.email.split('@')[0],
+                  photoURL: user.photoURL,
+                  createdAt: serverTimestamp()
+              });
+              modalCommentInput.value = "";
+              // Scroll to bottom
+              setTimeout(() => {
+                  modalCommentsList.scrollTop = modalCommentsList.scrollHeight;
+              }, 100);
+          } catch(err) {
+              console.error(err);
+          }
+      };
     });
 
     function renderPost(docSnap, currentUser) {
         const data = docSnap.data();
         const postId = docSnap.id;
 
-        // Xử lý dữ liệu
         const username = data.displayName || data.email.split('@')[0] || "Người dùng";
         const avatar = data.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.uid}`;
         const time = timeAgo(data.createdAt?.toDate());
-        const caption = data.text || data.caption || "";
+        const caption = data.text || "";
         const fileUrl = data.url || (data.imageUrls && data.imageUrls[0]) || null;
         
-        // Kiểm tra loại file (Ảnh hay Video)
         let mediaContent = "";
         if(fileUrl) {
             const isVideo = fileUrl.includes(".mp4") || fileUrl.includes("video");
             if(isVideo) {
                 mediaContent = `
-                    <video src="${fileUrl}" class="w-full h-[400px] object-cover bg-black" controls muted loop playsinline></video>
+                    <video src="${fileUrl}" class="w-full h-[450px] object-cover bg-black" controls muted loop playsinline></video>
                 `;
             } else {
                 mediaContent = `
@@ -175,89 +251,95 @@
             }
         }
 
-        // Tạo thẻ Post HTML
         const postEl = document.createElement("div");
-        postEl.className = "bg-white mb-2 pb-2 border-b border-gray-100 sm:rounded-xl sm:shadow-sm sm:mb-4 sm:border-none";
+        postEl.className = "bg-white mb-2 border-b border-gray-100 sm:rounded-2xl sm:shadow-sm sm:mb-6 sm:border-none overflow-hidden";
         
         postEl.innerHTML = `
           <div class="flex items-center justify-between p-3">
             <div class="flex items-center gap-3">
-               <img src="${avatar}" class="w-9 h-9 rounded-full border border-gray-200">
+               <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-100 object-cover">
                <div>
-                  <p class="font-bold text-sm leading-none">${username}</p>
-                  <p class="text-xs text-gray-400 mt-0.5">${time}</p>
+                  <p class="font-bold text-sm leading-none text-slate-900">${username}</p>
+                  <p class="text-xs text-gray-500 mt-1">${time}</p>
                </div>
             </div>
-            <button class="text-gray-400 hover:text-black">•••</button>
+            <button class="text-gray-400 hover:text-black p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+            </button>
           </div>
+
+          ${caption ? `<div class="px-3 pb-2 text-sm text-slate-800 break-words">${caption}</div>` : ''}
 
           <div class="w-full relative">
              ${mediaContent}
           </div>
 
           <div class="px-3 pt-3 flex items-center justify-between">
-             <div class="flex items-center gap-4">
-                <button class="btn-like flex flex-col items-center group">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 group-active:scale-125 transition-transform duration-200 icon-heart">
+             <div class="flex items-center gap-5">
+                <button class="btn-like flex flex-col items-center group transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 group-active:scale-125 transition-transform duration-200 icon-heart text-slate-800">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                     </svg>
                 </button>
-                <button class="btn-comment flex flex-col items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-black -rotate-90">
+                <button class="btn-open-modal flex flex-col items-center group transition hover:opacity-70">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-slate-800 -rotate-90">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
                     </svg>
                 </button>
+                <button class="flex flex-col items-center group transition hover:opacity-70">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7 text-slate-800">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12Zm0 0h7.5" />
+                    </svg>
+                </button>
              </div>
-             <button><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-800"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg></button>
+             <button class="hover:opacity-70">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-800"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /></svg>
+             </button>
           </div>
 
           <div class="px-3 py-1">
              <p class="font-bold text-sm text-likes-count">0 lượt thích</p>
           </div>
 
-          <div class="px-3 pb-2">
-             <p class="text-sm"><span class="font-bold mr-1">${username}</span>${caption}</p>
-          </div>
-
           <div class="px-3 pb-3">
-             <div class="comment-list space-y-1 mb-2"></div>
-             <form class="comment-form flex gap-2 items-center mt-2">
-                <input type="text" placeholder="Thêm bình luận..." class="text-sm flex-1 outline-none bg-transparent">
-                <button type="submit" class="text-blue-500 font-bold text-sm opacity-50 disabled:cursor-not-allowed">Đăng</button>
-             </form>
+             <div class="comment-preview text-sm text-gray-500 mb-1">
+                </div>
+             <p class="text-gray-400 text-xs cursor-pointer btn-view-all font-medium py-1">Xem tất cả bình luận...</p>
+             
+             <div class="flex items-center gap-2 mt-2">
+                 <img src="${currentUser.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser.uid}`}" class="w-6 h-6 rounded-full">
+                 <div class="text-xs text-gray-400 flex-1 btn-open-modal cursor-text">Thêm bình luận...</div>
+             </div>
           </div>
         `;
         
         feedContainer.appendChild(postEl);
 
-        // --- LOGIC XỬ LÝ SỰ KIỆN RIÊNG CHO MỖI POST --- //
+        // --- EVENTS ---
         
-        // 1. Xử lý Like (Real-time)
+        // 1. LIKE
         const likeBtn = postEl.querySelector(".btn-like");
         const heartIcon = postEl.querySelector(".icon-heart");
         const likeCountEl = postEl.querySelector(".text-likes-count");
         
-        // Lắng nghe Like
         onSnapshot(collection(db, "posts", postId, "likes"), (likesSnap) => {
             likeCountEl.textContent = `${likesSnap.size} lượt thích`;
-            
-            // Check if current user liked
-            // Lưu ý: cách này hơi tốn read nếu list like dài, nhưng ok cho demo
             let liked = false;
             likesSnap.forEach(doc => { if(doc.id === currentUser.uid) liked = true; });
 
             if(liked) {
                 heartIcon.setAttribute("fill", "currentColor");
                 heartIcon.classList.add("text-red-500", "animate-heart");
-                heartIcon.classList.remove("text-black");
+                heartIcon.classList.remove("text-slate-800");
+                heartIcon.setAttribute("stroke", "none");
             } else {
                 heartIcon.setAttribute("fill", "none");
                 heartIcon.classList.remove("text-red-500", "animate-heart");
-                heartIcon.classList.add("text-black");
+                heartIcon.classList.add("text-slate-800");
+                heartIcon.setAttribute("stroke", "currentColor");
             }
         });
 
-        // Click Like
         likeBtn.onclick = async () => {
             const likeRef = doc(db, "posts", postId, "likes", currentUser.uid);
             const docLike = await getDoc(likeRef);
@@ -268,55 +350,46 @@
             }
         };
 
-        // 2. Xử lý Comment (Real-time limit 2 comments mới nhất)
-        const commentList = postEl.querySelector(".comment-list");
-        const commentForm = postEl.querySelector(".comment-form");
-        
-        // Chỉ hiện 2 bình luận mới nhất để đỡ lag
-        const qCmt = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc")); 
-        
-        onSnapshot(qCmt, (snapshot) => {
-            commentList.innerHTML = "";
-            // Lấy 2 cmt đầu
-            const previewDocs = snapshot.docs.slice(0, 2);
-            
-            previewDocs.reverse().forEach(cmtDoc => { // Đảo ngược để hiện cũ -> mới
-                const cmt = cmtDoc.data();
-                const div = document.createElement("div");
-                div.className = "text-sm text-slate-800";
-                div.innerHTML = `<span class="font-bold mr-1">${cmt.displayName}:</span>${cmt.text}`;
-                commentList.appendChild(div);
-            });
+        // 2. OPEN COMMENT MODAL (Logic mới)
+        const openModalBtns = postEl.querySelectorAll(".btn-open-modal, .btn-view-all");
+        openModalBtns.forEach(btn => {
+            btn.onclick = () => {
+                activePostId = postId;
+                commentModalOverlay.classList.remove("hidden");
+                modalCommentsList.innerHTML = `<div class="text-center py-4 text-gray-400">Đang tải...</div>`;
 
-            if(snapshot.size > 2) {
-                const viewMore = document.createElement("p");
-                viewMore.className = "text-gray-400 text-xs cursor-pointer pt-1";
-                viewMore.textContent = `Xem tất cả ${snapshot.size} bình luận`;
-                commentList.prepend(viewMore);
-            }
+                // Real-time listener for ALL comments in this post
+                const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
+                
+                unsubscribeComments = onSnapshot(q, (snapshot) => {
+                    modalCommentsList.innerHTML = "";
+                    if(snapshot.empty) {
+                        modalCommentsList.innerHTML = `<div class="text-center py-10 text-gray-400">Chưa có bình luận nào.<br>Hãy là người đầu tiên!</div>`;
+                        return;
+                    }
+
+                    snapshot.forEach(docSnap => {
+                        const cmt = docSnap.data();
+                        const cmtDiv = document.createElement("div");
+                        cmtDiv.className = "flex gap-3 mb-4";
+                        
+                        const cmtAvatar = cmt.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${cmt.uid}`;
+                        
+                        cmtDiv.innerHTML = `
+                            <img src="${cmtAvatar}" class="w-8 h-8 rounded-full border bg-gray-100 flex-shrink-0">
+                            <div>
+                                <div class="bg-gray-100 px-3 py-2 rounded-2xl rounded-tl-none">
+                                    <span class="font-bold text-xs block mb-0.5">${cmt.displayName}</span>
+                                    <span class="text-sm text-gray-800 break-words">${cmt.text}</span>
+                                </div>
+                                <span class="text-[10px] text-gray-400 ml-1">${timeAgo(cmt.createdAt?.toDate())}</span>
+                            </div>
+                        `;
+                        modalCommentsList.appendChild(cmtDiv);
+                    });
+                });
+            };
         });
-
-        // Post Comment
-        const inputCmt = commentForm.querySelector("input");
-        const btnPost = commentForm.querySelector("button");
-        
-        inputCmt.addEventListener("input", () => {
-            btnPost.style.opacity = inputCmt.value.trim() ? "1" : "0.5";
-        });
-
-        commentForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const text = inputCmt.value.trim();
-            if(!text) return;
-
-            await addDoc(collection(db, "posts", postId, "comments"), {
-                text,
-                uid: currentUser.uid,
-                displayName: currentUser.displayName || currentUser.email.split('@')[0],
-                createdAt: serverTimestamp()
-            });
-            inputCmt.value = "";
-        };
     }
   </script>
 </body>
