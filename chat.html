@@ -2,12 +2,15 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hộp thư - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    body { font-family: 'Inter', sans-serif; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 20px); }
   </style>
 </head>
 <body class="bg-white text-slate-900 pb-20">
@@ -64,20 +67,28 @@
     </div>
   </div>
 
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
     <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
         <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
         <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
       </svg>
       <span class="text-[10px] font-medium mt-1">Trang chủ</span>
     </a>
+
+    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+            <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
+            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.115.04a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Bạn bè</span>
+    </a>
     
     <a href="upload.html" class="flex flex-col items-center group">
-      <div class="relative w-12 h-8">
-        <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1"></div>
-        <div class="absolute left-0 right-0 top-0 bottom-0 bg-white rounded-lg flex items-center justify-center border-x-2 border-black">
+      <div class="relative w-12 h-8 scale-110">
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1 shadow-sm"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1 shadow-sm"></div>
+        <div class="absolute left-0 right-0 top-0 bottom-0 bg-white rounded-lg flex items-center justify-center border-x-2 border-black z-10">
             <span class="text-black font-bold text-xl leading-none mb-0.5">+</span>
         </div>
       </div>
@@ -99,9 +110,9 @@
   </nav>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
@@ -261,29 +272,36 @@
     window.respondRequest = async (docId, isAccepted) => {
       try {
         const ref = doc(db, "friendRequests", docId);
-        await updateDoc(ref, { status: isAccepted ? "accepted" : "declined" });
+        
+        if (isAccepted) {
+            await updateDoc(ref, { status: "accepted" });
+            // Sau khi chấp nhận, chuyển sang tab tin nhắn
+            switchTab('friends');
+        } else {
+            // Nếu từ chối, xóa luôn doc đó
+            await deleteDoc(ref);
+        }
       } catch (err) {
         console.error(err);
         alert("Có lỗi xảy ra");
       }
     };
 
-    // 3. Tìm kiếm người dùng
+    // 3. Tìm kiếm người dùng (Đã sửa lỗi cú pháp getDocs)
     window.searchUser = async () => {
       const email = document.getElementById("searchInput").value.trim();
       const resultEl = document.getElementById("searchResult");
       
-      if (!email) return;
+      if (!email) {
+          resultEl.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">Vui lòng nhập email để tìm kiếm.</p>`;
+          return;
+      }
+
       resultEl.innerHTML = `<div class="text-center text-gray-400">Đang tìm...</div>`;
 
-      // Tìm user theo email
-      const q = query(collection(db, "users"), where("email", "==", email));
-      const snap = await getDoc(q); // Cần dùng getDocs vì query trả về mảng
-
-      // Sửa lại đoạn trên vì getDoc chỉ dùng cho DocumentReference
-      // Dùng logic dưới đây cho query:
-      import { getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-      const querySnap = await getDocs(q);
+      // SỬ DỤNG TRƯỜNG lowercaseEmail để tìm kiếm
+      const q = query(collection(db, "users"), where("lowercaseEmail", "==", email.toLowerCase()));
+      const querySnap = await getDocs(q); // Dùng getDocs cho query
 
       if (querySnap.empty) {
         resultEl.innerHTML = `<p class="text-red-500 text-center text-sm">Không tìm thấy email này.</p>`;
@@ -292,7 +310,7 @@
 
       resultEl.innerHTML = "";
       
-      querySnap.forEach((docSnap) => {
+      querySnap.forEach(async (docSnap) => {
           const user = docSnap.data();
           const uid = docSnap.id;
 
@@ -303,6 +321,24 @@
 
           const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${uid}`;
           
+          // Kiểm tra trạng thái hiện tại (Đã là bạn bè/Đang chờ)
+          const qCheck = query(
+              collection(db, "friendRequests"),
+              where("users", "array-contains", uid) // Tìm doc chứa uid của người tìm thấy
+          );
+          
+          const checkSnap = await getDocs(qCheck);
+          let buttonHtml = `<button onclick="sendRequest('${uid}', this)" class="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:scale-105 transition">Kết bạn</button>`;
+
+          if(!checkSnap.empty) {
+              const data = checkSnap.docs[0].data();
+              if (data.status === 'accepted') {
+                  buttonHtml = `<span class="text-green-500 text-xs font-bold">Đã là bạn</span>`;
+              } else if (data.status === 'pending') {
+                  buttonHtml = `<span class="text-gray-500 text-xs font-bold">Đã gửi/Nhận lời mời</span>`;
+              }
+          }
+          
           const item = document.createElement("div");
           item.className = "flex items-center justify-between p-3 bg-gray-50 rounded-xl";
           item.innerHTML = `
@@ -310,42 +346,37 @@
                 <img src="${avatar}" class="w-10 h-10 rounded-full">
                 <span class="font-bold text-sm">${user.displayName || user.email}</span>
              </div>
-             <button onclick="sendRequest('${uid}')" class="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:scale-105 transition">Kết bạn</button>
+             <div>${buttonHtml}</div>
           `;
           resultEl.appendChild(item);
       });
     };
 
-    window.sendRequest = async (toUid) => {
-        // Kiểm tra xem đã gửi chưa
-        const q = query(
-            collection(db, "friendRequests"),
-            where("from", "==", currentUser.uid),
-            where("to", "==", toUid)
-        );
-        const snap = await getDocs(q); // Import getDocs ở trên
+    window.sendRequest = async (toUid, btnElement) => {
+        btnElement.disabled = true;
+        btnElement.textContent = '...';
 
-        if (!snap.empty) {
-            alert("Bạn đã gửi lời mời rồi!");
-            return;
+        try {
+            await addDoc(collection(db, "friendRequests"), {
+                from: currentUser.uid,
+                to: toUid,
+                status: "pending",
+                users: [currentUser.uid, toUid],
+                createdAt: serverTimestamp()
+            });
+            
+            // Cập nhật button sau khi gửi thành công
+            btnElement.parentElement.innerHTML = `<span class="text-gray-500 text-xs font-bold">Đã gửi</span>`;
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi gửi lời mời: " + error.message);
+            btnElement.disabled = false;
+            btnElement.textContent = 'Kết bạn';
         }
-
-        await addDoc(collection(db, "friendRequests"), {
-            from: currentUser.uid,
-            to: toUid,
-            status: "pending",
-            users: [currentUser.uid, toUid],
-            createdAt: serverTimestamp()
-        });
-        
-        alert("Đã gửi lời mời!");
-        document.getElementById("searchInput").value = "";
-        document.getElementById("searchResult").innerHTML = "";
-        switchTab('friends'); // Quay lại tab chính
     };
     
     // Quick fix: Import getDocs manualy inside module scope for search function
-    import { getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getDocs as getDocsLocal } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   </script>
 </body>
 </html>
