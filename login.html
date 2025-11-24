@@ -81,9 +81,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    // Thêm GoogleAuthProvider và signInWithPopup
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    // Thêm getDoc để kiểm tra user tồn tại chưa
     import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -108,7 +106,7 @@
     const title = document.getElementById("form-title");
     const btnLogin = document.getElementById("btnLogin");
     const btnRegister = document.getElementById("btnRegister");
-    const googleBtn = document.getElementById("googleBtn"); // Nút Google
+    const googleBtn = document.getElementById("googleBtn"); 
 
     // Toggle Forms
     toggleBtn.addEventListener("click", () => {
@@ -133,7 +131,7 @@
         messageDiv.classList.remove("hidden");
     }
 
-    // --- XỬ LÝ GOOGLE LOGIN ---
+    // --- XỬ LÝ GOOGLE LOGIN (Đã cập nhật lowercase) ---
     googleBtn.addEventListener("click", async () => {
         const provider = new GoogleAuthProvider();
         googleBtn.disabled = true;
@@ -143,19 +141,23 @@
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            // Kiểm tra xem user này đã có trong Firestore chưa
             const userDocRef = doc(db, "users", user.uid);
             const userDocSnap = await getDoc(userDocRef);
 
             if (!userDocSnap.exists()) {
                 // Nếu chưa có (người mới), lưu thông tin vào Firestore
+                const lowerName = (user.displayName || "").toLowerCase();
+                const lowerEmail = (user.email || "").toLowerCase();
+                
                 await setDoc(userDocRef, {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName,
-                    photoURL: user.photoURL, // Lấy luôn ảnh Google
+                    photoURL: user.photoURL,
                     createdAt: serverTimestamp(),
-                    bio: "Xin chào, tôi dùng Google Login! 🌐"
+                    bio: "Xin chào, tôi dùng Google Login! 🌐",
+                    lowercaseName: lowerName,
+                    lowercaseEmail: lowerEmail
                 });
             }
 
@@ -194,7 +196,7 @@
         });
     });
 
-    // --- EMAIL REGISTER ---
+    // --- EMAIL REGISTER (Đã cập nhật lowercase) ---
     registerForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("register-name").value;
@@ -209,15 +211,23 @@
         .then(async (userCredential) => {
           const user = userCredential.user;
           const randomAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
+          
+          // Lấy giá trị lowercase
+          const lowerName = name.toLowerCase();
+          const lowerEmail = email.toLowerCase();
 
           await updateProfile(user, { displayName: name, photoURL: randomAvatar });
+          
+          // Cập nhật setDoc để lưu các trường lowercase
           await setDoc(doc(db, "users", user.uid), {
             uid: user.uid,
             email: user.email,
             displayName: name,
             photoURL: randomAvatar,
             createdAt: serverTimestamp(),
-            bio: "Thành viên mới ✨"
+            bio: "Thành viên mới ✨",
+            lowercaseName: lowerName,
+            lowercaseEmail: lowerEmail
           });
 
           window.location.href = "feed.html";
