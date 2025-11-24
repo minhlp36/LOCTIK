@@ -49,34 +49,35 @@
 
     <div id="content-search" class="hidden space-y-4">
         <div class="relative">
-            <input type="text" id="searchInput" placeholder="Nhập chính xác email..." class="w-full bg-white border border-gray-200 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <input type="text" id="searchInput" placeholder="Nhập email hoặc tên chính xác..." class="w-full bg-white border border-gray-200 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
             <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             <button onclick="handleSearch()" class="absolute right-2 top-2 bg-black text-white px-4 py-1.5 rounded-lg text-sm font-bold">Tìm</button>
         </div>
+        <div id="search-error" class="hidden text-center text-red-500 text-sm"></div>
         <div id="search-results" class="space-y-3"></div>
     </div>
 
   </main>
 
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb px-2">
     
-    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-1/5">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
         <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
         <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
       </svg>
       <span class="text-[10px] font-medium mt-1">Trang chủ</span>
     </a>
     
-    <a href="friends.html" class="flex flex-col items-center text-black transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+    <a href="friends.html" class="flex flex-col items-center text-black transition group w-1/5">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
             <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
             <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
         </svg>          
         <span class="text-[10px] font-medium mt-1">Bạn bè</span>
     </a>
 
-    <a href="upload.html" class="flex flex-col items-center group">
+    <a href="upload.html" class="flex flex-col items-center group w-1/5">
         <div class="relative w-12 h-8">
           <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1"></div>
           <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1"></div>
@@ -86,8 +87,17 @@
         </div>
     </a>
 
-    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+    <a href="messages.html" class="flex flex-col items-center text-gray-400 hover:text-black transition w-1/5">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.405 0 4.781.173 7.152.521C20.868 3.068 22 4.47 22 6.084v5.832c0 1.613-1.133 3.016-2.848 3.313A49.128 49.128 0 0112 15.75c-2.405 0-4.781-.173-7.152-.521C3.133 14.932 2 13.529 2 11.916V6.084c0-1.614 1.132-3.016 2.848-3.313zM3 18.364V18.75A3.375 3.375 0 006.375 22.125h11.25A3.375 3.375 0 0021 18.75v-.386c-2.9.758-5.9.986-9 .986s-6.1-.228-9-.986z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M12 10.875a.375.375 0 00.375-.375v-1.5a.375.375 0 00-.75 0v1.5a.375.375 0 00.375.375z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M12 7.125a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Hộp thư</span>
+    </a>
+
+    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition w-1/5">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
         <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
       </svg>
       <span class="text-[10px] font-medium mt-1">Hồ sơ</span>
@@ -250,9 +260,8 @@
         });
     }
 
-    // --- XỬ LÝ TÌM KIẾM & TRẠNG THÁI NÚT --- //
+    // --- XỬ LÝ TÌM KIẾM (ĐÃ CẬP NHẬT) --- //
     
-    // Hàm kiểm tra mối quan hệ giữa 2 người
     async function checkRelation(targetUid) {
         const q = query(collection(db, "friendRequests"), where("users", "array-contains", currentUser.uid));
         const snapshot = await getDocs(q);
@@ -266,7 +275,6 @@
                 if (d.status === 'accepted') {
                     result.status = 'friends';
                 } else if (d.status === 'pending') {
-                    // Kiểm tra xem mình gửi hay mình nhận
                     result.status = (d.from === currentUser.uid) ? 'sent' : 'received';
                 }
             }
@@ -274,45 +282,60 @@
         return result;
     }
 
+    // Tìm kiếm: Thử tìm Email -> Nếu rỗng thử tìm DisplayName
     window.handleSearch = async () => {
         const keyword = document.getElementById("searchInput").value.trim();
         const container = document.getElementById("search-results");
+        const errorDiv = document.getElementById("search-error");
         
         if(!keyword) return;
+        
         container.innerHTML = `<p class="text-center text-gray-400">Đang tìm...</p>`;
+        errorDiv.classList.add('hidden');
 
-        const q = query(collection(db, "users"), where("email", "==", keyword));
-        const querySnap = await getDocs(q);
+        let querySnap;
+
+        // Cách 1: Tìm theo Email chính xác
+        const qEmail = query(collection(db, "users"), where("email", "==", keyword));
+        querySnap = await getDocs(qEmail);
+
+        // Cách 2: Nếu không thấy email, tìm theo displayName (chính xác)
+        if(querySnap.empty) {
+            const qName = query(collection(db, "users"), where("displayName", "==", keyword));
+            querySnap = await getDocs(qName);
+        }
 
         container.innerHTML = "";
+        
         if(querySnap.empty) {
-            container.innerHTML = `<p class="text-center text-red-400">Không tìm thấy email này.</p>`;
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <p class="text-3xl mb-2">🕵️</p>
+                    <p class="text-gray-500 font-medium">Không tìm thấy.</p>
+                    <p class="text-xs text-gray-400 mt-1">Hãy nhập chính xác Email hoặc Tên.</p>
+                </div>
+            `;
             return;
         }
 
-        // Duyệt qua từng kết quả (thường là 1 vì email unique)
         for (const docSnap of querySnap.docs) {
             const user = docSnap.data();
             if(docSnap.id === currentUser.uid) {
-                container.innerHTML = `<p class="text-center text-gray-500">Đây là bạn.</p>`;
-                continue;
+                continue; // Bỏ qua bản thân
             }
 
             const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${docSnap.id}`;
             
-            // Kiểm tra trạng thái
             const relation = await checkRelation(docSnap.id);
             let btnHtml = '';
 
             if (relation.status === 'friends') {
                 btnHtml = `<button class="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-lg text-xs font-bold cursor-default">Bạn bè</button>`;
             } else if (relation.status === 'sent') {
-                // Đã gửi -> Cho phép Huỷ
                 btnHtml = `<button onclick="cancelReqFromSearch('${relation.docId}', this)" class="bg-gray-200 text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-300">Đã gửi (Huỷ)</button>`;
             } else if (relation.status === 'received') {
                 btnHtml = `<button onclick="switchTab('requests')" class="bg-blue-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold">Xem lời mời</button>`;
             } else {
-                // Chưa có gì -> Nút Kết bạn
                 btnHtml = `<button onclick="sendFriendRequest('${docSnap.id}', this)" class="bg-black text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-80">Kết bạn</button>`;
             }
 
@@ -320,7 +343,7 @@
             div.className = "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm";
             div.innerHTML = `
                 <div class="flex items-center gap-3">
-                    <img src="${avatar}" class="w-10 h-10 rounded-full">
+                    <img src="${avatar}" class="w-10 h-10 rounded-full bg-gray-50">
                     <div>
                         <p class="font-bold text-sm">${user.displayName || "User"}</p>
                         <p class="text-xs text-gray-400">${user.email}</p>
@@ -332,11 +355,14 @@
             `;
             container.appendChild(div);
         }
+        
+        // Nếu sau khi lọc bản thân mà danh sách trống
+        if(container.innerHTML === "") {
+             container.innerHTML = `<p class="text-center text-gray-500">Đây là tài khoản của bạn.</p>`;
+        }
     };
 
-    // Gửi kết bạn và cập nhật nút ngay lập tức
     window.sendFriendRequest = async (toUid, btnElement) => {
-        // Disable nút để tránh double click
         btnElement.disabled = true;
         btnElement.innerText = "Đang gửi...";
         
@@ -349,7 +375,6 @@
                 createdAt: serverTimestamp()
             });
             
-            // Đổi nút thành nút "Đã gửi (Huỷ)"
             const parent = btnElement.parentElement;
             parent.innerHTML = `<button onclick="cancelReqFromSearch('${docRef.id}', this)" class="bg-gray-200 text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-300">Đã gửi (Huỷ)</button>`;
             
@@ -360,7 +385,6 @@
         }
     };
 
-    // Huỷ ngay tại màn hình Search
     window.cancelReqFromSearch = async (docId, btnElement) => {
         if(!confirm("Huỷ lời mời kết bạn này?")) return;
         
@@ -369,8 +393,6 @@
 
         try {
             await deleteDoc(doc(db, "friendRequests", docId));
-            // Reset về nút Kết bạn (cần ID user kia, nhưng đơn giản reload search hoặc đổi text)
-            // Cách đơn giản nhất: Đổi text thành "Đã huỷ"
             btnElement.className = "bg-gray-100 text-gray-400 px-4 py-1.5 rounded-lg text-xs font-bold";
             btnElement.innerText = "Đã huỷ";
             btnElement.onclick = null;
