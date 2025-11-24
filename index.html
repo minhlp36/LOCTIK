@@ -2,92 +2,181 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LokTik - Trang chính</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Chào mừng - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
   <style>
-    .nav-btn {
-      @apply flex flex-col items-center justify-center text-sm text-gray-600 hover:text-blue-500;
+    /* Ẩn thanh cuộn */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Animation cho Logo */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
     }
-    .nav-btn.active {
-      @apply text-blue-500 font-semibold;
-    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+<body class="bg-white text-slate-900 flex flex-col h-screen overflow-hidden">
 
-  <!-- Nội dung chính -->
-  <main class="flex-grow flex items-center justify-center">
-    <div class="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
-      <h1 class="text-2xl font-bold mb-4">🎉 Chào mừng đến LokTik!</h1>
-      <p id="userEmail" class="mb-4 text-gray-700">Đang tải...</p>
-      <!-- ❌ Đã xoá nút đăng xuất ở đây -->
+  <main class="flex-grow flex flex-col items-center justify-center p-6 relative">
+    
+    <div class="absolute top-10 left-10 w-20 h-20 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-10 right-10 w-20 h-20 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-20 w-20 h-20 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+
+    <div class="mb-8 text-center animate-float">
+      <h1 class="font-black text-6xl tracking-tighter flex items-center justify-center gap-1 mb-2">
+        <span class="text-black">Lok</span><span class="text-blue-600">Tik</span>
+      </h1>
+      <p class="text-gray-400 text-sm tracking-widest uppercase">Mạng xã hội video</p>
     </div>
+
+    <div id="loading" class="text-gray-400">Đang tải dữ liệu...</div>
+
+    <div id="userCard" class="hidden flex-col items-center w-full max-w-xs animate-fade-in-up">
+        <div class="relative mb-4">
+            <img id="userAvatar" src="https://via.placeholder.com/100" class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover">
+            <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
+        </div>
+        
+        <h2 class="text-xl font-bold mb-1">Xin chào, <span id="userName" class="text-blue-600">...</span>!</h2>
+        <p class="text-gray-500 text-sm mb-6" id="userEmail">...</p>
+
+        <a href="feed.html" class="w-full bg-black text-white py-3 rounded-xl font-bold shadow-lg shadow-gray-200 hover:scale-105 transition transform flex items-center justify-center gap-2">
+            <span>Vào Lướt Feed</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+        </a>
+
+        <button id="btnLogout" class="mt-4 text-gray-400 text-sm hover:text-red-500 transition underline">
+            Đăng xuất tài khoản
+        </button>
+    </div>
+
+    <div id="loginPrompt" class="hidden flex-col items-center w-full max-w-xs">
+        <p class="text-gray-500 mb-6 text-center">Tham gia ngay để kết nối với bạn bè và xem các video thú vị.</p>
+        <a href="login.html" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition text-center">
+            Đăng nhập ngay
+        </a>
+        <a href="register.html" class="mt-4 text-gray-500 text-sm hover:text-black transition">
+            Chưa có tài khoản? Đăng ký
+        </a>
+    </div>
+
   </main>
 
-  <!-- Thanh điều hướng -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around py-2">
-    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">🏠</span>
-      <span class="text-sm">Trang chủ</span>
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
+    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+      </svg>
+      <span class="text-[10px] font-medium mt-1">Trang chủ</span>
     </a>
-    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">➕</span>
-      <span class="text-sm">Đăng</span>
+
+    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+            <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
+            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
+        </svg>
+        <span class="text-[10px] font-medium mt-1">Bạn bè</span>
     </a>
-    <a href="chat.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">💬</span>
-      <span class="text-sm">Tin nhắn</span>
-      </a>
-    <a href="friends.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">✌🏻</span>
-      <span class="text-sm">Bạn bè</span>
+    
+    <a href="upload.html" class="flex flex-col items-center group">
+      <div class="relative w-12 h-8">
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1"></div>
+        <div class="absolute left-0 right-0 top-0 bottom-0 bg-white rounded-lg flex items-center justify-center border-x-2 border-black">
+            <span class="text-black font-bold text-xl leading-none mb-0.5">+</span>
+        </div>
+      </div>
     </a>
-    <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">👤</span>
-      <span class="text-sm">Tài khoản</span>
+
+    <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+            <path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" />
+          </svg>
+      <span class="text-[10px] font-medium mt-1">Hộp thư</span>
+    </a>
+
+    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-[10px] font-medium mt-1">Hồ sơ</span>
     </a>
   </nav>
 
-  <script>
-    // Firebase config
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
       projectId: "loktik-1d9af",
       storageBucket: "loktik-1d9af.appspot.com",
       messagingSenderId: "801363229819",
-      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de",
-      measurementId: "G-S6HQ3HN7W3"
+      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
     };
 
-    // Khởi tạo Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Kiểm tra đăng nhập
-    auth.onAuthStateChanged((user) => {
-      const emailEl = document.getElementById("userEmail");
-      if (user) {
-        emailEl.textContent = "Bạn đang đăng nhập với: " + user.email;
-      } else {
-        setTimeout(() => {
-          if (!auth.currentUser) {
-            window.location.href = "login.html";
-          }
-        }, 500);
-      }
+    const loading = document.getElementById("loading");
+    const userCard = document.getElementById("userCard");
+    const loginPrompt = document.getElementById("loginPrompt");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+    const userEmail = document.getElementById("userEmail");
+    const btnLogout = document.getElementById("btnLogout");
+
+    // Xử lý đăng xuất
+    btnLogout.addEventListener("click", () => {
+        if(confirm("Bạn muốn đăng xuất?")) {
+            signOut(auth).then(() => window.location.reload());
+        }
     });
 
-    // Điều hướng
-    function goTo(page) {
-      window.location.href = page;
-    }
+    onAuthStateChanged(auth, async (user) => {
+      loading.style.display = "none";
+      
+      if (user) {
+        // Đã đăng nhập -> Hiện thẻ User
+        loginPrompt.style.display = "none";
+        userCard.style.display = "flex";
+        
+        userEmail.textContent = user.email;
+        userName.textContent = user.displayName || user.email.split('@')[0];
+        
+        if(user.photoURL) {
+            userAvatar.src = user.photoURL;
+        } else {
+            // Lấy từ Firestore nếu Auth không có
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if(userDoc.exists() && userDoc.data().photoURL) {
+                    userAvatar.src = userDoc.data().photoURL;
+                } else {
+                    userAvatar.src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
+                }
+            } catch(e) {
+                 userAvatar.src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
+            }
+        }
+        
+      } else {
+        // Chưa đăng nhập -> Hiện nút Login
+        userCard.style.display = "none";
+        loginPrompt.style.display = "flex";
+      }
+    });
   </script>
 </body>
 </html>
