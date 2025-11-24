@@ -3,59 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tin nhắn - LokTik</title>
+  <title>Hộp thư - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <style>
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen pb-24">
+<body class="bg-white text-slate-900 pb-20">
 
-  <div class="max-w-md mx-auto p-4">
-    <h1 class="text-xl font-bold mb-4 text-center">💬 Tin nhắn</h1>
+  <header class="sticky top-0 bg-white z-20 border-b border-gray-100 px-4 py-3 flex items-center justify-center">
+    <h1 class="text-lg font-bold">Hộp thư</h1>
+    <button onclick="switchTab('search')" class="absolute right-4 text-black">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+        </svg>          
+    </button>
+  </header>
 
-    <!-- Tabs -->
-    <div class="flex justify-around mb-4">
-      <button onclick="showTab('friendsTab')" class="tab-btn text-blue-600 font-medium">🧑‍🤝‍🧑 Bạn bè</button>
-      <button onclick="showTab('requestsTab')" class="tab-btn text-gray-600">📥 Lời mời</button>
-      <button onclick="showTab('searchTab')" class="tab-btn text-gray-600">🔍 Tìm bạn</button>
+  <div class="max-w-md mx-auto">
+    
+    <div class="flex p-2 gap-2 bg-gray-50 mx-4 mt-2 rounded-lg">
+      <button onclick="switchTab('friends')" id="btn-friends" class="flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow text-black transition-all">
+        Tin nhắn
+      </button>
+      <button onclick="switchTab('requests')" id="btn-requests" class="flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-black transition-all relative">
+        Lời mời
+        <span id="badge-requests" class="hidden absolute top-0 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+      </button>
     </div>
 
-    <!-- Tab content -->
-    <div id="friendsTab" class="tab-content space-y-3"></div>
-    <div id="requestsTab" class="tab-content hidden space-y-3"></div>
-    <div id="searchTab" class="tab-content hidden space-y-3">
-      <input type="text" id="searchInput" placeholder="Nhập email người dùng..." class="w-full p-2 border rounded" />
-      <button onclick="searchUser()" class="w-full bg-blue-500 text-white py-2 rounded mt-2">Tìm & Gửi lời mời</button>
-      <div id="searchResult"></div>
+    <div class="p-4 min-h-[500px]">
+      
+      <div id="tab-friends" class="block animate-fade-in">
+        <div id="friendsList" class="space-y-1">
+            <div class="flex items-center gap-3 p-2">
+                <div class="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+                <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                    <div class="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div id="tab-requests" class="hidden">
+        <h3 class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">Yêu cầu mới</h3>
+        <div id="requestsList" class="space-y-4"></div>
+      </div>
+
+      <div id="tab-search" class="hidden">
+        <div class="relative mb-6">
+            <input type="text" id="searchInput" placeholder="Tìm theo email..." class="w-full bg-gray-100 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <button onclick="searchUser()" class="absolute right-2 top-2 bg-black text-white px-3 py-1.5 rounded-lg text-sm font-bold">Tìm</button>
+        </div>
+        <div id="searchResult" class="space-y-3"></div>
+      </div>
+
     </div>
   </div>
 
-   <!-- Điều hướng -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-300 flex justify-around py-2">
-    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">🏠</span>
-      <span class="text-sm">Trang chủ</span>
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb">
+    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 group-hover:scale-105 transition">
+        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+      </svg>
+      <span class="text-[10px] font-medium mt-1">Trang chủ</span>
     </a>
-    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">➕</span>
-      <span class="text-sm">Đăng</span>
+    
+    <a href="upload.html" class="flex flex-col items-center group">
+      <div class="relative w-12 h-8">
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1"></div>
+        <div class="absolute left-0 right-0 top-0 bottom-0 bg-white rounded-lg flex items-center justify-center border-x-2 border-black">
+            <span class="text-black font-bold text-xl leading-none mb-0.5">+</span>
+        </div>
+      </div>
     </a>
-    <a href="chat.html" class="flex flex-col items-center text-blue-500 font-bold">
-      <span class="text-xl">💬</span>
-      <span class="text-sm">Tin nhắn</span>
+
+    <a href="chat.html" class="flex flex-col items-center text-black transition group">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+            <path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" />
+          </svg>
+      <span class="text-[10px] font-medium mt-1">Hộp thư</span>
     </a>
-    <a href="friends.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">✌🏻</span>
-      <span class="text-sm">Bạn bè</span>
-    </a>
-    <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-500">
-      <span class="text-xl">👤</span>
-      <span class="text-sm">Tài khoản</span>
+
+    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+      </svg>
+      <span class="text-[10px] font-medium mt-1">Hồ sơ</span>
     </a>
   </nav>
-  
-  <script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
       authDomain: "loktik-1d9af.firebaseapp.com",
@@ -64,308 +111,241 @@
       messagingSenderId: "801363229819",
       appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     let currentUser = null;
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) return location.href = "login.html";
-      currentUser = user;
-      loadFriends();
-      loadRequests();
-    });
+    // --- UI Helpers ---
+    window.switchTab = (tabName) => {
+      document.getElementById('tab-friends').classList.add('hidden');
+      document.getElementById('tab-requests').classList.add('hidden');
+      document.getElementById('tab-search').classList.add('hidden');
+      
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.getElementById(tabId).classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('text-blue-600'));
-      event.target.classList.add('text-blue-600');
-    }
+      // Style buttons
+      const btnFriends = document.getElementById('btn-friends');
+      const btnRequests = document.getElementById('btn-requests');
 
-    async function loadFriends() {
-      const friendsTab = document.getElementById("friendsTab");
-      friendsTab.innerHTML = "🔄 Đang tải...";
-
-      const querySnap = await db.collection("friendRequests")
-        .where("status", "==", "accepted")
-        .where("users", "array-contains", currentUser.uid)
-        .get();
-
-      if (querySnap.empty) {
-        friendsTab.innerHTML = `<p class="text-gray-600 text-center">Chưa có bạn nào.</p>`;
-        return;
+      if(tabName === 'friends' || tabName === 'search') {
+          btnFriends.className = "flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow text-black transition-all";
+          btnRequests.className = "flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-black transition-all relative";
+      } else {
+          btnRequests.className = "flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow text-black transition-all relative";
+          btnFriends.className = "flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-black transition-all";
       }
-
-      friendsTab.innerHTML = "";
-      for (const doc of querySnap.docs) {
-        const data = doc.data();
-        const otherUID = data.users.find(uid => uid !== currentUser.uid);
-        const userSnap = await db.collection("users").doc(otherUID).get();
-        const user = userSnap.data();
-        friendsTab.innerHTML += `
-          <a href="chat-room.html?id=${doc.id}" class="flex items-center gap-3 bg-white p-3 rounded shadow hover:bg-gray-100">
-            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
-            <span class="text-gray-800 font-medium">${user.displayName || user.email}</span>
-          </a>
-        `;
-      }
-    }
-
-    async function loadRequests() {
-      const requestsTab = document.getElementById("requestsTab");
-      requestsTab.innerHTML = "🔄 Đang tải...";
-
-      const snap = await db.collection("friendRequests")
-        .where("to", "==", currentUser.uid)
-        .where("status", "==", "pending")
-        .get();
-
-      if (snap.empty) {
-        requestsTab.innerHTML = `<p class="text-gray-600 text-center">Không có lời mời nào.</p>`;
-        return;
-      }
-
-      requestsTab.innerHTML = "";
-      for (const doc of snap.docs) {
-        const data = doc.data();
-        const fromSnap = await db.collection("users").doc(data.from).get();
-        const user = fromSnap.data();
-
-        const container = document.createElement("div");
-        container.className = "bg-white p-3 rounded shadow flex items-center justify-between";
-
-        container.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
-            <span>${user.displayName || user.email}</span>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="respondRequest('${doc.id}', true)" class="text-green-600">✔️</button>
-            <button onclick="respondRequest('${doc.id}', false)" class="text-red-600">❌</button>
-          </div>
-        `;
-        requestsTab.appendChild(container);
-      }
-    }
-
-    async function respondRequest(requestId, accept) {
-      const ref = db.collection("friendRequests").doc(requestId);
-      await ref.update({ status: accept ? "accepted" : "declined" });
-      loadRequests();
-      if (accept) loadFriends();
-    }
-
-    <!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tin nhắn - LokTik</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-</head>
-<body class="bg-gray-100 min-h-screen pb-24">
-
-  <div class="max-w-md mx-auto p-4">
-    <h1 class="text-xl font-bold mb-4 text-center">💬 Tin nhắn</h1>
-
-    <!-- Tabs -->
-    <div class="flex justify-around mb-4">
-      <button onclick="showTab('friendsTab')" class="tab-btn text-blue-600 font-medium">🧑‍🤝‍🧑 Bạn bè</button>
-      <button onclick="showTab('requestsTab')" class="tab-btn text-gray-600">📥 Lời mời</button>
-      <button onclick="showTab('searchTab')" class="tab-btn text-gray-600">🔍 Tìm bạn</button>
-    </div>
-
-    <!-- Tab content -->
-    <div id="friendsTab" class="tab-content space-y-3"></div>
-    <div id="requestsTab" class="tab-content hidden space-y-3"></div>
-    <div id="searchTab" class="tab-content hidden space-y-3">
-      <input type="text" id="searchInput" placeholder="Nhập email người dùng..." class="w-full p-2 border rounded" />
-      <button onclick="searchUser()" class="w-full bg-blue-500 text-white py-2 rounded mt-2">Tìm & Gửi lời mời</button>
-      <div id="searchResult"></div>
-    </div>
-  </div>
-
-  <!-- Thanh điều hướng -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-    <a href="feed.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">🏠</span><span class="text-sm">Trang chủ</span>
-    </a>
-    <a href="upload.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">➕</span><span class="text-sm">Đăng</span>
-    </a>
-    <a href="chat.html" class="flex flex-col items-center text-blue-600">
-      <span class="text-xl">💬</span><span class="text-sm">Tin nhắn</span>
-    </a>
-    <a href="account.html" class="flex flex-col items-center text-gray-600 hover:text-blue-600">
-      <span class="text-xl">👤</span><span class="text-sm">Tài khoản</span>
-    </a>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
-      authDomain: "loktik-1d9af.firebaseapp.com",
-      projectId: "loktik-1d9af",
-      storageBucket: "loktik-1d9af.appspot.com",
-      messagingSenderId: "801363229819",
-      appId: "1:801363229819:web:49f086bc180d9ed9c0b6de"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
-    let currentUser = null;
-
-    auth.onAuthStateChanged(async user => {
+    // --- Main Logic ---
+    onAuthStateChanged(auth, (user) => {
       if (!user) return location.href = "login.html";
       currentUser = user;
-      loadFriends();
-      loadRequests();
+      listenToFriends();
+      listenToRequests();
     });
 
-    function showTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.getElementById(tabId).classList.remove('hidden');
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('text-blue-600'));
-      event.target.classList.add('text-blue-600');
-    }
+    // 1. Lắng nghe danh sách bạn bè (Real-time)
+    function listenToFriends() {
+      const q = query(
+        collection(db, "friendRequests"),
+        where("status", "==", "accepted"),
+        where("users", "array-contains", currentUser.uid)
+      );
 
-    async function loadFriends() {
-      const friendsTab = document.getElementById("friendsTab");
-      friendsTab.innerHTML = "🔄 Đang tải...";
+      // onSnapshot tự động chạy lại khi dữ liệu thay đổi
+      onSnapshot(q, async (snapshot) => {
+        const listEl = document.getElementById("friendsList");
+        listEl.innerHTML = "";
 
-      const querySnap = await db.collection("friendRequests")
-        .where("status", "==", "accepted")
-        .where("users", "array-contains", currentUser.uid)
-        .get();
+        if (snapshot.empty) {
+            listEl.innerHTML = `<div class="text-center py-10 text-gray-400">
+                <p class="text-4xl mb-2">👋</p>
+                <p>Chưa có cuộc trò chuyện nào.</p>
+                <button onclick="switchTab('search')" class="text-blue-500 font-bold mt-2">Tìm bạn mới</button>
+            </div>`;
+            return;
+        }
 
-      if (querySnap.empty) {
-        friendsTab.innerHTML = `<p class="text-gray-600 text-center">Chưa có bạn nào.</p>`;
-        return;
-      }
+        // Cần lấy info user của từng người bạn
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const otherUID = data.users.find(uid => uid !== currentUser.uid);
+          
+          // Lấy thông tin người kia
+          const userSnap = await getDoc(doc(db, "users", otherUID));
+          if(!userSnap.exists()) continue;
 
-      friendsTab.innerHTML = "";
-      for (const doc of querySnap.docs) {
-        const data = doc.data();
-        const otherUID = data.users.find(uid => uid !== currentUser.uid);
-        const userSnap = await db.collection("users").doc(otherUID).get();
-        const user = userSnap.data();
-        friendsTab.innerHTML += `
-          <a href="chat-room.html?id=${doc.id}" class="flex items-center gap-3 bg-white p-3 rounded shadow hover:bg-gray-100">
-            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
-            <span class="text-gray-800 font-medium">${user.displayName || user.email}</span>
-          </a>
-        `;
-      }
-    }
+          const friend = userSnap.data();
+          const avatar = friend.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${otherUID}`;
+          const name = friend.displayName || friend.email.split('@')[0];
 
-    async function loadRequests() {
-      const requestsTab = document.getElementById("requestsTab");
-      requestsTab.innerHTML = "🔄 Đang tải...";
-
-      const snap = await db.collection("friendRequests")
-        .where("to", "==", currentUser.uid)
-        .where("status", "==", "pending")
-        .get();
-
-      if (snap.empty) {
-        requestsTab.innerHTML = `<p class="text-gray-600 text-center">Không có lời mời nào.</p>`;
-        return;
-      }
-
-      requestsTab.innerHTML = "";
-      for (const doc of snap.docs) {
-        const data = doc.data();
-        const fromSnap = await db.collection("users").doc(data.from).get();
-        const user = fromSnap.data();
-
-        const container = document.createElement("div");
-        container.className = "bg-white p-3 rounded shadow flex items-center justify-between";
-
-        container.innerHTML = `
-          <div class="flex items-center gap-3">
-            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
-            <span>${user.displayName || user.email}</span>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="respondRequest('${doc.id}', true)" class="text-green-600">✔️</button>
-            <button onclick="respondRequest('${doc.id}', false)" class="text-red-600">❌</button>
-          </div>
-        `;
-        requestsTab.appendChild(container);
-      }
-    }
-
-    async function respondRequest(requestId, accept) {
-      const ref = db.collection("friendRequests").doc(requestId);
-      await ref.update({ status: accept ? "accepted" : "declined" });
-      loadRequests();
-      if (accept) loadFriends();
-    }
-
-    async function searchUser() {
-      const email = document.getElementById("searchInput").value.trim();
-      const result = document.getElementById("searchResult");
-      result.innerHTML = "🔍 Đang tìm...";
-
-      if (!email) return result.innerHTML = `<p class="text-red-500">Nhập email cần tìm.</p>`;
-
-      const snap = await db.collection("users").where("email", "==", email).get();
-
-      if (snap.empty) {
-        result.innerHTML = `<p class="text-gray-600">Không tìm thấy người dùng.</p>`;
-        return;
-      }
-
-      const user = snap.docs[0].data();
-      const uid = snap.docs[0].id;
-
-      if (uid === currentUser.uid) {
-        result.innerHTML = `<p class="text-gray-600">Đó là bạn mà 🤭</p>`;
-        return;
-      }
-
-      result.innerHTML = `
-        <div class="flex items-center gap-3 bg-white p-3 rounded shadow justify-between">
-          <div class="flex items-center gap-3">
-            <img src="${user.photoURL || 'https://www.gravatar.com/avatar?d=mp'}" class="w-10 h-10 rounded-full" />
-            <span>${user.displayName || user.email}</span>
-          </div>
-          <button onclick="sendRequest('${uid}')" class="bg-blue-500 text-white px-3 py-1 rounded">Kết bạn</button>
-        </div>
-      `;
-    }
-
-    async function sendRequest(toUid) {
-      const ref = db.collection("friendRequests");
-      const existing = await ref
-        .where("from", "==", currentUser.uid)
-        .where("to", "==", toUid)
-        .get();
-
-      if (!existing.empty) {
-        alert("Bạn đã gửi lời mời trước đó.");
-        return;
-      }
-
-      await ref.add({
-        from: currentUser.uid,
-        to: toUid,
-        status: "pending",
-        users: [currentUser.uid, toUid],
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          const item = document.createElement("div");
+          item.innerHTML = `
+            <a href="chat-room.html?id=${docSnap.id}&friendName=${encodeURIComponent(name)}" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition cursor-pointer">
+              <div class="relative">
+                <img src="${avatar}" class="w-12 h-12 rounded-full object-cover border border-gray-100" />
+                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-slate-900 truncate">${name}</h4>
+                <p class="text-sm text-gray-500 truncate">Nhấn để nhắn tin...</p>
+              </div>
+              <div class="text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              </div>
+            </a>
+          `;
+          listEl.appendChild(item);
+        }
       });
-
-      alert("✅ Đã gửi lời mời kết bạn!");
-      document.getElementById("searchResult").innerHTML = "";
     }
+
+    // 2. Lắng nghe lời mời kết bạn (Real-time)
+    function listenToRequests() {
+      const q = query(
+        collection(db, "friendRequests"),
+        where("to", "==", currentUser.uid),
+        where("status", "==", "pending")
+      );
+
+      onSnapshot(q, async (snapshot) => {
+        const listEl = document.getElementById("requestsList");
+        const badge = document.getElementById("badge-requests");
+        
+        listEl.innerHTML = "";
+
+        if (snapshot.empty) {
+            badge.classList.add("hidden");
+            listEl.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">Không có lời mời nào.</p>`;
+            return;
+        }
+
+        badge.classList.remove("hidden"); // Hiện chấm đỏ
+
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const userSnap = await getDoc(doc(db, "users", data.from));
+          if(!userSnap.exists()) continue;
+
+          const sender = userSnap.data();
+          const avatar = sender.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.from}`;
+
+          const div = document.createElement("div");
+          div.className = "flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm";
+          div.innerHTML = `
+            <div class="flex items-center gap-3">
+              <img src="${avatar}" class="w-10 h-10 rounded-full bg-gray-100" />
+              <div>
+                <p class="font-bold text-sm text-black">${sender.displayName || "Người dùng"}</p>
+                <p class="text-xs text-gray-400">Muốn kết bạn</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn-accept bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-blue-600 transition">Chấp nhận</button>
+              <button class="btn-decline bg-gray-100 text-gray-600 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-gray-200 transition">Xoá</button>
+            </div>
+          `;
+
+          // Gán sự kiện click
+          div.querySelector(".btn-accept").onclick = () => respondRequest(docSnap.id, true);
+          div.querySelector(".btn-decline").onclick = () => respondRequest(docSnap.id, false);
+          
+          listEl.appendChild(div);
+        }
+      });
+    }
+
+    // Xử lý chấp nhận/từ chối
+    window.respondRequest = async (docId, isAccepted) => {
+      try {
+        const ref = doc(db, "friendRequests", docId);
+        await updateDoc(ref, { status: isAccepted ? "accepted" : "declined" });
+      } catch (err) {
+        console.error(err);
+        alert("Có lỗi xảy ra");
+      }
+    };
+
+    // 3. Tìm kiếm người dùng
+    window.searchUser = async () => {
+      const email = document.getElementById("searchInput").value.trim();
+      const resultEl = document.getElementById("searchResult");
+      
+      if (!email) return;
+      resultEl.innerHTML = `<div class="text-center text-gray-400">Đang tìm...</div>`;
+
+      // Tìm user theo email
+      const q = query(collection(db, "users"), where("email", "==", email));
+      const snap = await getDoc(q); // Cần dùng getDocs vì query trả về mảng
+
+      // Sửa lại đoạn trên vì getDoc chỉ dùng cho DocumentReference
+      // Dùng logic dưới đây cho query:
+      import { getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      const querySnap = await getDocs(q);
+
+      if (querySnap.empty) {
+        resultEl.innerHTML = `<p class="text-red-500 text-center text-sm">Không tìm thấy email này.</p>`;
+        return;
+      }
+
+      resultEl.innerHTML = "";
+      
+      querySnap.forEach((docSnap) => {
+          const user = docSnap.data();
+          const uid = docSnap.id;
+
+          if (uid === currentUser.uid) {
+            resultEl.innerHTML = `<p class="text-gray-500 text-center text-sm">Đây là tài khoản của bạn.</p>`;
+            return;
+          }
+
+          const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${uid}`;
+          
+          const item = document.createElement("div");
+          item.className = "flex items-center justify-between p-3 bg-gray-50 rounded-xl";
+          item.innerHTML = `
+             <div class="flex items-center gap-3">
+                <img src="${avatar}" class="w-10 h-10 rounded-full">
+                <span class="font-bold text-sm">${user.displayName || user.email}</span>
+             </div>
+             <button onclick="sendRequest('${uid}')" class="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow hover:scale-105 transition">Kết bạn</button>
+          `;
+          resultEl.appendChild(item);
+      });
+    };
+
+    window.sendRequest = async (toUid) => {
+        // Kiểm tra xem đã gửi chưa
+        const q = query(
+            collection(db, "friendRequests"),
+            where("from", "==", currentUser.uid),
+            where("to", "==", toUid)
+        );
+        const snap = await getDocs(q); // Import getDocs ở trên
+
+        if (!snap.empty) {
+            alert("Bạn đã gửi lời mời rồi!");
+            return;
+        }
+
+        await addDoc(collection(db, "friendRequests"), {
+            from: currentUser.uid,
+            to: toUid,
+            status: "pending",
+            users: [currentUser.uid, toUid],
+            createdAt: serverTimestamp()
+        });
+        
+        alert("Đã gửi lời mời!");
+        document.getElementById("searchInput").value = "";
+        document.getElementById("searchResult").innerHTML = "";
+        switchTab('friends'); // Quay lại tab chính
+    };
+    
+    // Quick fix: Import getDocs manualy inside module scope for search function
+    import { getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   </script>
 </body>
 </html>
-
-  
