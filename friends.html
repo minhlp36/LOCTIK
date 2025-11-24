@@ -294,7 +294,7 @@
         });
     }
 
-    // --- XỬ LÝ TÌM KIẾM & GỢI Ý (ĐÃ NÂNG CẤP) --- //
+    // --- XỬ LÝ TÌM KIẾM & GỢI Ý (ĐÃ CẬP NHẬT LOWERCASE) --- //
     
     // Hàm kiểm tra mối quan hệ (Bạn bè/Đã gửi/Đã nhận/Chưa là gì)
     async function checkRelation(targetUid) {
@@ -318,7 +318,10 @@
     }
 
     window.handleSearch = async () => {
-        const keyword = document.getElementById("searchInput").value.trim();
+        // 1. Lấy từ khóa và chuyển thành chữ thường để tìm kiếm không phân biệt hoa/thường
+        const rawKeyword = document.getElementById("searchInput").value.trim();
+        const keyword = rawKeyword.toLowerCase(); 
+        
         const container = document.getElementById("search-results");
         
         container.innerHTML = `<div class="text-center text-gray-400 py-4"><span class="animate-pulse">Đang tìm kiếm...</span></div>`;
@@ -327,19 +330,20 @@
 
         // LOGIC MỚI: Nếu để trống ô tìm kiếm -> Hiện gợi ý 10 người dùng mới nhất
         if(!keyword) {
-             const qSuggest = query(collection(db, "users"), limit(10)); // Lấy 10 người bất kỳ
+             const qSuggest = query(collection(db, "users"), limit(10)); 
              querySnap = await getDocs(qSuggest);
-             document.getElementById("search-hint").innerText = "Gợi ý kết bạn:";
+             document.getElementById("search-hint").innerText = "Gợi ý kết bạn (10 người dùng mới nhất):";
         } else {
-             // Logic cũ: Tìm theo Email hoặc Tên chính xác
-             const qEmail = query(collection(db, "users"), where("email", "==", keyword));
+             // 2. TÌM KIẾM THEO LOWERCASE EMAIL
+             const qEmail = query(collection(db, "users"), where("lowercaseEmail", "==", keyword));
              querySnap = await getDocs(qEmail);
 
+             // 3. Nếu không tìm thấy Email, TÌM KIẾM THEO LOWERCASE DISPLAYNAME
              if(querySnap.empty) {
-                const qName = query(collection(db, "users"), where("displayName", "==", keyword));
+                const qName = query(collection(db, "users"), where("lowercaseName", "==", keyword));
                 querySnap = await getDocs(qName);
              }
-             document.getElementById("search-hint").innerText = `Kết quả cho: "${keyword}"`;
+             document.getElementById("search-hint").innerText = `Kết quả cho: "${rawKeyword}"`;
         }
 
         container.innerHTML = "";
@@ -348,16 +352,19 @@
             container.innerHTML = `
                 <div class="text-center py-6">
                     <p class="text-3xl mb-2 grayscale opacity-50">🕵️</p>
-                    <p class="text-gray-500 font-medium">Không tìm thấy.</p>
+                    <p class="text-gray-500 font-medium">Không tìm thấy người dùng khớp.</p>
+                    <p class="text-xs text-gray-400 mt-1">Hãy thử nhập email hoặc tên đầy đủ.</p>
                 </div>
             `;
             return;
         }
 
+        let resultsFound = 0;
         for (const docSnap of querySnap.docs) {
             const user = docSnap.data();
             if(docSnap.id === currentUser.uid) continue; // Bỏ qua chính mình
 
+            resultsFound++;
             const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${docSnap.id}`;
             const relation = await checkRelation(docSnap.id);
             
@@ -386,6 +393,17 @@
                 <div>${btnHtml}</div>
             `;
             container.appendChild(div);
+        }
+        
+        // Xử lý trường hợp không tìm thấy (nếu kết quả tìm kiếm rỗng)
+        if(resultsFound === 0) {
+            container.innerHTML = `
+                <div class="text-center py-6">
+                    <p class="text-3xl mb-2 grayscale opacity-50">🕵️</p>
+                    <p class="text-gray-500 font-medium">Không tìm thấy người dùng khớp.</p>
+                    <p class="text-xs text-gray-400 mt-1">Hãy thử nhập email hoặc tên đầy đủ.</p>
+                </div>
+            `;
         }
     };
 
@@ -416,7 +434,6 @@
         try {
             await deleteDoc(doc(db, "friendRequests", docId));
             const parent = btnElement.parentElement;
-            // Reset button to "Kết bạn" requires reloading search or complex DOM manipulation. 
             // Simple approach: Alert text change
             btnElement.className = "bg-gray-50 text-gray-400 px-4 py-1.5 rounded-lg text-xs font-bold cursor-default";
             btnElement.innerText = "Đã huỷ";
