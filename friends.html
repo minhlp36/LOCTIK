@@ -1,116 +1,112 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Bạn bè - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 20px); }
-    /* Animation cho kết quả tìm kiếm */
+    
+    /* Animation */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
   </style>
 </head>
 <body class="bg-white text-slate-900 pb-24">
 
-  <header class="sticky top-0 bg-white z-30 border-b border-gray-100 px-4 py-3 flex justify-center items-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-    <h1 class="font-bold text-lg">Bạn bè</h1>
+  <header class="sticky top-0 bg-white/95 backdrop-blur-md z-30 border-b border-gray-50 px-4 h-14 flex items-center justify-center">
+    <h1 class="font-bold text-lg tracking-tight">Bạn bè</h1>
   </header>
 
   <main class="max-w-md mx-auto p-4">
     
-    <div class="flex p-1 bg-gray-100 rounded-xl mb-6">
-      <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-black transition-all">Danh sách</button>
-      <button onclick="switchTab('requests')" id="tab-requests" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-black transition-all relative">
+    <div class="flex p-1 bg-gray-100 rounded-xl mb-6 relative">
+      <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-900 transition-all z-10">Danh sách</button>
+      <button onclick="switchTab('requests')" id="tab-requests" class="flex-1 py-2 text-xs font-bold rounded-lg text-gray-500 hover:text-slate-900 transition-all z-10 relative">
         Lời mời
-        <span id="badge-req" class="hidden absolute top-1.5 right-3 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+        <span id="badge-req" class="hidden absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
       </button>
-      <button onclick="switchTab('search')" id="tab-search" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-black transition-all">Tìm & Kết bạn</button>
+      <button onclick="switchTab('search')" id="tab-search" class="flex-1 py-2 text-xs font-bold rounded-lg text-gray-500 hover:text-slate-900 transition-all z-10">Tìm kiếm</button>
     </div>
 
-    <div id="content-list" class="space-y-3">
-        <div id="loading-friends" class="text-center text-gray-400 py-8">
-            <div class="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-            Đang tải danh sách...
+    <div id="content-list" class="space-y-4 animate-fade-in">
+        <div id="loading-friends" class="text-center py-10">
+            <div class="animate-spin w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full mx-auto mb-2"></div>
         </div>
-        <div id="friend-list-container"></div>
+        <div id="friend-list-container" class="space-y-3"></div>
     </div>
 
-    <div id="content-requests" class="hidden space-y-6">
-        <div>
-            <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Lời mời đã nhận</h3>
+    <div id="content-requests" class="hidden space-y-8 animate-fade-in">
+        <div class="space-y-3">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Lời mời kết bạn</h3>
             <div id="received-list" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">Không có lời mời nào.</p>
+                <div class="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                    <p class="text-sm text-gray-400">Không có lời mời nào.</p>
+                </div>
             </div>
         </div>
         
-        <div>
-            <h3 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Đã gửi đi</h3>
-            <div id="sent-list" class="space-y-2"></div>
+        <div class="space-y-3">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Đã gửi đi</h3>
+            <div id="sent-list" class="space-y-1"></div>
         </div>
     </div>
 
-    <div id="content-search" class="hidden space-y-4">
+    <div id="content-search" class="hidden space-y-4 animate-fade-in">
         <div class="relative group">
-            <input type="text" id="searchInput" placeholder="Nhập tên hoặc email..." class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition shadow-sm">
-            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5 group-focus-within:text-blue-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-700 transition">Tìm</button>
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400 group-focus-within:text-slate-900 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" id="searchInput" placeholder="Nhập tên hoặc email..." class="w-full bg-gray-50 border border-gray-200 p-3 pl-10 pr-20 rounded-xl outline-none focus:ring-2 focus:ring-black focus:bg-white transition text-sm">
+            <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-800 transition">Tìm</button>
         </div>
         
-        <div id="search-hint" class="text-xs text-gray-500 text-center italic">
-            Mẹo: Để trống và bấm "Tìm" để xem danh sách gợi ý.
-        </div>
-
-        <div id="search-results" class="space-y-3 pt-2">
+        <div id="search-results" class="space-y-3">
+            <div class="text-center py-10 text-gray-400">
+                <p class="text-sm">Nhập từ khoá để tìm bạn mới.</p>
+            </div>
         </div>
     </div>
 
   </main>
 
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center py-3 pb-5 z-40 safe-area-pb shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
-    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
-        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
-        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-3 pb-safe z-40">
+    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
       </svg>
-      <span class="text-[10px] font-medium mt-1">Trang chủ</span>
     </a>
 
-    <a href="friends.html" class="flex flex-col items-center text-black transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+    <a href="friends.html" class="flex flex-col items-center text-black transition group w-16">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
             <path fill-rule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clip-rule="evenodd" />
-            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.115.04a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
+            <path d="M5.082 14.254a8.287 8.287 0 00-1.308 5.135 9.687 9.687 0 01-1.764-.44l-.115-.04a.563.563 0 01-.373-.487l-.01-.121a3.75 3.75 0 013.57-4.047zM20.226 19.389a8.287 8.287 0 00-1.308-5.135 3.75 3.75 0 013.57 4.047l-.01.121a.563.563 0 01-.373.486l-.115.04c-.567.2-1.156.349-1.764.441z" />
         </svg>
-        <span class="text-[10px] font-medium mt-1">Bạn bè</span>
     </a>
     
-    <a href="upload.html" class="flex flex-col items-center group">
-      <div class="relative w-12 h-8 scale-110">
-        <div class="absolute left-0 top-0 bottom-0 w-8 bg-cyan-400 rounded-lg transform -translate-x-1 shadow-sm"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-8 bg-red-500 rounded-lg transform translate-x-1 shadow-sm"></div>
-        <div class="absolute left-0 right-0 top-0 bottom-0 bg-white rounded-lg flex items-center justify-center border-x-2 border-black z-10">
-            <span class="text-black font-bold text-xl leading-none mb-0.5">+</span>
-        </div>
+    <a href="upload.html" class="flex flex-col items-center group -mt-6">
+      <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg shadow-black/20 hover:scale-105 transition border-2 border-white">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
       </div>
     </a>
 
-    <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
-            <path fill-rule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clip-rule="evenodd" />
+    <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
           </svg>
-      <span class="text-[10px] font-medium mt-1">Hộp thư</span>
     </a>
 
-    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
-        <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
-      </svg>
-      <span class="text-[10px] font-medium mt-1">Hồ sơ</span>
+    <a href="account.html" class="flex flex-col items-center text-gray-400 hover:text-black transition w-16">
+      <div class="w-7 h-7 rounded-full border border-gray-300 overflow-hidden p-0.5">
+         <img id="myNavAvatar" src="https://via.placeholder.com/30" class="w-full h-full rounded-full object-cover bg-gray-100">
+      </div>
     </a>
   </nav>
 
@@ -133,127 +129,119 @@
     const db = getFirestore(app);
 
     let currentUser = null;
+    // Cache quan hệ: { uid: { status: 'accepted'|'pending', type: 'sent'|'received', docId: '...' } }
+    let relationshipsMap = {}; 
 
-    // Tab Switching
+    // --- TAB LOGIC ---
     window.switchTab = (tabName) => {
         ['list', 'requests', 'search'].forEach(t => {
             document.getElementById(`content-${t}`).classList.add('hidden');
             const btn = document.getElementById(`tab-${t}`);
-            btn.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-black transition-all";
+            btn.className = "flex-1 py-2 text-xs font-bold rounded-lg text-gray-500 hover:text-slate-900 transition-all";
         });
         document.getElementById(`content-${tabName}`).classList.remove('hidden');
-        document.getElementById(`tab-${tabName}`).className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-black transition-all";
+        document.getElementById(`tab-${tabName}`).className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-900 transition-all";
     };
 
-    // Auth & Init
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = "login.html";
       currentUser = user;
       
+      // Nav avatar
+      const myNavAvatar = document.getElementById("myNavAvatar");
+      myNavAvatar.src = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
+
+      // Listeners
       listenFriends();
       listenRequests();
       listenSentRequests();
+      
+      // Pre-fetch relations for search
+      await updateRelationshipsMap();
     });
 
-    // 1. Listen Friends List
-    function listenFriends() {
-        const q = query(
-            collection(db, "friendRequests"),
-            where("status", "==", "accepted"),
-            where("users", "array-contains", currentUser.uid)
-        );
+    // --- HÀM HỖ TRỢ TỐI ƯU TÌM KIẾM ---
+    async function updateRelationshipsMap() {
+        const q = query(collection(db, "friendRequests"), where("users", "array-contains", currentUser.uid));
+        onSnapshot(q, (snapshot) => {
+            relationshipsMap = {}; // Reset cache
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                const otherUid = d.users.find(u => u !== currentUser.uid);
+                if (otherUid) {
+                    relationshipsMap[otherUid] = {
+                        status: d.status,
+                        type: d.from === currentUser.uid ? 'sent' : 'received',
+                        docId: doc.id
+                    };
+                }
+            });
+        });
+    }
 
+    // 1. FRIEND LIST
+    function listenFriends() {
+        const q = query(collection(db, "friendRequests"), where("status", "==", "accepted"), where("users", "array-contains", currentUser.uid));
         onSnapshot(q, async (snapshot) => {
             const container = document.getElementById("friend-list-container");
             document.getElementById("loading-friends").style.display = "none";
             container.innerHTML = "";
 
             if(snapshot.empty) {
-                container.innerHTML = `
-                    <div class="text-center text-gray-400 py-10">
-                        <p class="text-4xl mb-2 grayscale opacity-50">🤷‍♂️</p>
-                        <p>Chưa có bạn bè nào.</p>
-                        <button onclick="switchTab('search')" class="mt-3 text-blue-500 font-semibold text-sm hover:underline">Tìm kết bạn ngay</button>
-                    </div>`;
+                container.innerHTML = `<div class="text-center text-gray-400 py-10"><p>Chưa có bạn bè.</p></div>`;
                 return;
             }
 
             for (const docSnap of snapshot.docs) {
                 const data = docSnap.data();
                 const otherUid = data.users.find(uid => uid !== currentUser.uid);
-                
                 let user = { displayName: "Người dùng", email: "...", photoURL: null };
                 try {
                     const userSnap = await getDoc(doc(db, "users", otherUid));
                     if(userSnap.exists()) user = userSnap.data();
                 } catch(e) {}
 
-                const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${otherUid}`;
-                const name = user.displayName || user.email.split('@')[0];
-
                 const div = document.createElement("div");
-                div.className = "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100";
+                div.className = "flex items-center justify-between bg-white p-3 rounded-2xl border border-gray-50 animate-fade-in";
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <img src="${avatar}" class="w-12 h-12 rounded-full bg-gray-50 border border-gray-100 object-cover">
+                        <img src="${user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${otherUid}`}" class="w-11 h-11 rounded-full bg-gray-50 border object-cover">
                         <div>
-                            <p class="font-bold text-sm text-slate-900">${name}</p>
-                            <a href="chat-room.html?id=${docSnap.id}&friendName=${encodeURIComponent(name)}" class="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1 mt-0.5">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.207 12.793l-1.414 1.414L12 13.414l-2.793 2.793-1.414-1.414L10.586 12 7.793 9.207l1.414-1.414L12 10.586l2.793-2.793 1.414 1.414L13.414 12l2.793 2.793z"/></svg>
-                                Nhắn tin
-                            </a>
+                            <p class="font-bold text-sm text-slate-900">${user.displayName}</p>
+                            <a href="chatroom.html?id=${docSnap.id}&friendName=${encodeURIComponent(user.displayName)}" class="text-xs text-blue-600 font-bold hover:underline mt-0.5 block">Nhắn tin</a>
                         </div>
                     </div>
-                    <button onclick="unfriend('${docSnap.id}')" class="text-gray-300 hover:text-red-500 p-2 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <button onclick="unfriend('${docSnap.id}')" class="text-gray-300 hover:text-red-500 p-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg></button>
                 `;
                 container.appendChild(div);
             }
         });
     }
 
-    // 2. Listen Incoming Requests
+    // 2. REQUESTS
     function listenRequests() {
-        const q = query(
-            collection(db, "friendRequests"),
-            where("status", "==", "pending"),
-            where("to", "==", currentUser.uid)
-        );
-
+        const q = query(collection(db, "friendRequests"), where("status", "==", "pending"), where("to", "==", currentUser.uid));
         onSnapshot(q, async (snapshot) => {
             const container = document.getElementById("received-list");
-            const badge = document.getElementById("badge-req");
-            
-            if(snapshot.empty) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">Không có lời mời nào.</p>`;
-                badge.classList.add("hidden");
-                return;
-            }
-            
-            badge.classList.remove("hidden");
-            container.innerHTML = "";
-            
+            document.getElementById("badge-req").classList.toggle("hidden", snapshot.empty);
+            container.innerHTML = snapshot.empty ? `<div class="text-center py-4 text-gray-400 text-xs">Không có lời mời mới.</div>` : "";
+
             for(const docSnap of snapshot.docs) {
                 const data = docSnap.data();
-                let user = { displayName: "Ai đó", photoURL: null };
-                try {
-                    const userSnap = await getDoc(doc(db, "users", data.from));
-                    if(userSnap.exists()) user = userSnap.data();
-                } catch(e){}
-
-                const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.from}`;
+                const userSnap = await getDoc(doc(db, "users", data.from));
+                if(!userSnap.exists()) continue;
+                const user = userSnap.data();
 
                 const div = document.createElement("div");
-                div.className = "flex items-center justify-between bg-white p-3 rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.1)] border border-gray-50";
+                div.className = "flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-gray-50";
                 div.innerHTML = `
                    <div class="flex items-center gap-3">
-                        <img src="${avatar}" class="w-10 h-10 rounded-full bg-gray-100 object-cover">
+                        <img src="${user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.from}`}" class="w-10 h-10 rounded-full object-cover">
                         <p class="font-bold text-sm">${user.displayName}</p>
                    </div>
                    <div class="flex gap-2">
-                        <button onclick="respond('${docSnap.id}', true)" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition">Chấp nhận</button>
-                        <button onclick="respond('${docSnap.id}', false)" class="bg-gray-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Xoá</button>
+                        <button onclick="respond('${docSnap.id}', true)" class="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold">Đồng ý</button>
+                        <button onclick="respond('${docSnap.id}', false)" class="bg-gray-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold">Xoá</button>
                    </div>
                 `;
                 container.appendChild(div);
@@ -261,14 +249,8 @@
         });
     }
 
-    // 3. Listen Sent Requests
     function listenSentRequests() {
-        const q = query(
-            collection(db, "friendRequests"),
-            where("status", "==", "pending"),
-            where("from", "==", currentUser.uid)
-        );
-
+        const q = query(collection(db, "friendRequests"), where("status", "==", "pending"), where("from", "==", currentUser.uid));
         onSnapshot(q, async (snapshot) => {
             const container = document.getElementById("sent-list");
             container.innerHTML = "";
@@ -296,133 +278,77 @@
         });
     }
 
-    // --- HÀM TÌM KIẾM MỚI (ĐÃ SỬA LỖI) --- //
-    
-    async function checkRelation(targetUid) {
-        const q = query(collection(db, "friendRequests"), where("users", "array-contains", currentUser.uid));
-        const snapshot = await getDocs(q);
-        let result = { status: 'none', docId: null };
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            if (d.users.includes(targetUid)) {
-                result.docId = doc.id;
-                if (d.status === 'accepted') result.status = 'friends';
-                else if (d.status === 'pending') result.status = (d.from === currentUser.uid) ? 'sent' : 'received';
-            }
-        });
-        return result;
-    }
-
+    // 3. SEARCH LOGIC (Tối ưu)
     window.handleSearch = async () => {
-        const rawKeyword = document.getElementById("searchInput").value.trim();
-        const keyword = rawKeyword.toLowerCase(); 
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
         const container = document.getElementById("search-results");
         
-        container.innerHTML = `<div class="text-center text-gray-400 py-4 flex flex-col items-center"><div class="animate-spin w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full mb-2"></div>Đang tìm kiếm...</div>`;
+        if(!keyword) {
+            container.innerHTML = `<div class="text-center py-4 text-gray-400 text-xs">Vui lòng nhập tên để tìm.</div>`;
+            return;
+        }
 
-        try {
-            // LẤY TẤT CẢ USER (LIMIT 50) ĐỂ LỌC Ở CLIENT
-            // Cách này khắc phục triệt để lỗi phân biệt hoa thường và thiếu trường dữ liệu
-            const q = query(collection(db, "users"), limit(50));
-            const querySnap = await getDocs(q);
+        container.innerHTML = `<div class="flex justify-center py-4"><div class="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full"></div></div>`;
 
-            container.innerHTML = "";
-            let resultsFound = 0;
+        // Lấy 20 user (giả lập search full text vì firestore hạn chế)
+        const q = query(collection(db, "users"), limit(50)); 
+        const querySnap = await getDocs(q);
+        
+        container.innerHTML = "";
+        let count = 0;
 
-            for (const docSnap of querySnap.docs) {
-                if(docSnap.id === currentUser.uid) continue; // Bỏ qua chính mình
+        querySnap.forEach(docSnap => {
+            if(docSnap.id === currentUser.uid) return;
+            
+            const user = docSnap.data();
+            const name = (user.displayName || "").toLowerCase();
+            const email = (user.email || "").toLowerCase();
 
-                const user = docSnap.data();
-                const userName = (user.displayName || "No Name").toLowerCase();
-                const userEmail = (user.email || "").toLowerCase();
+            if(name.includes(keyword) || email.includes(keyword)) {
+                count++;
+                const relation = relationshipsMap[docSnap.id];
+                let btnHtml = `<button onclick="addFriend('${docSnap.id}', this)" class="bg-black text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-80 transition">Kết bạn</button>`;
 
-                // Logic so sánh: Nếu từ khoá trống HOẶC tên/email có chứa từ khoá
-                const isMatch = keyword === "" || userName.includes(keyword) || userEmail.includes(keyword);
-
-                if (isMatch) {
-                    resultsFound++;
-                    const avatar = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${docSnap.id}`;
-                    const relation = await checkRelation(docSnap.id);
-                    
-                    let btnHtml = '';
-                    if (relation.status === 'friends') {
-                        btnHtml = `<button class="bg-green-100 text-green-600 px-4 py-1.5 rounded-lg text-xs font-bold cursor-default flex items-center gap-1 border border-green-200">✓ Bạn bè</button>`;
-                    } else if (relation.status === 'sent') {
-                        btnHtml = `<button onclick="cancelReqFromSearch('${relation.docId}', this)" class="bg-gray-100 text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Đã gửi (Huỷ)</button>`;
-                    } else if (relation.status === 'received') {
-                        btnHtml = `<button onclick="switchTab('requests')" class="bg-blue-100 text-blue-600 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-200 transition">Xem lời mời</button>`;
-                    } else {
-                        btnHtml = `<button onclick="sendFriendRequest('${docSnap.id}', this)" class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-700 transition shadow-sm">Kết bạn</button>`;
+                if (relation) {
+                    if (relation.status === 'accepted') {
+                        btnHtml = `<span class="text-green-600 text-xs font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">✓ Bạn bè</span>`;
+                    } else if (relation.type === 'sent') {
+                        btnHtml = `<button onclick="cancelReq('${relation.docId}')" class="text-red-500 bg-gray-50 px-3 py-1.5 rounded-lg text-xs font-bold">Đã gửi (Huỷ)</button>`;
+                    } else if (relation.type === 'received') {
+                        btnHtml = `<button onclick="switchTab('requests')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold">Xem lời mời</button>`;
                     }
-
-                    const div = document.createElement("div");
-                    div.className = "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-gray-100 animate-fade-in";
-                    div.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <img src="${avatar}" class="w-10 h-10 rounded-full bg-gray-50 object-cover border border-gray-100">
-                            <div>
-                                <p class="font-bold text-sm text-slate-900">${user.displayName || "User"}</p>
-                                <p class="text-[10px] text-gray-400 font-mono">${user.email}</p>
-                            </div>
-                        </div>
-                        <div>${btnHtml}</div>
-                    `;
-                    container.appendChild(div);
                 }
-            }
 
-            if(keyword === "") {
-                document.getElementById("search-hint").innerText = "Gợi ý người dùng (Mới nhất):";
-            } else {
-                document.getElementById("search-hint").innerText = `Tìm thấy ${resultsFound} kết quả cho "${rawKeyword}"`;
-            }
-
-            if(resultsFound === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-6">
-                        <p class="text-3xl mb-2 grayscale opacity-50">🤷‍♂️</p>
-                        <p class="text-gray-500 font-medium">Không tìm thấy ai.</p>
-                        <p class="text-xs text-gray-400 mt-1">Đảm bảo bạn có >1 tài khoản trong Database.</p>
+                const div = document.createElement("div");
+                div.className = "flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm animate-fade-in";
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${docSnap.id}`}" class="w-10 h-10 rounded-full bg-gray-100 object-cover">
+                        <div>
+                            <p class="font-bold text-sm text-slate-900">${user.displayName || "User"}</p>
+                            <p class="text-[10px] text-gray-400 font-mono">${user.email}</p>
+                        </div>
                     </div>
+                    <div>${btnHtml}</div>
                 `;
+                container.appendChild(div);
             }
-        } catch (error) {
-            console.error("Search Error:", error);
-            container.innerHTML = `<p class="text-red-500 text-center text-sm">Lỗi tìm kiếm. Kiểm tra Firestore Rules.</p>`;
-        }
+        });
+
+        if(count === 0) container.innerHTML = `<div class="text-center py-6 text-gray-400 text-sm">Không tìm thấy người dùng này.</div>`;
     };
 
-    // Actions
-    window.sendFriendRequest = async (toUid, btnElement) => {
-        btnElement.disabled = true;
-        btnElement.innerText = "...";
+    // ACTIONS
+    window.addFriend = async (toUid, btn) => {
+        btn.disabled = true; btn.innerText = "...";
         try {
-            const docRef = await addDoc(collection(db, "friendRequests"), {
-                from: currentUser.uid,
-                to: toUid,
-                status: "pending",
-                users: [currentUser.uid, toUid],
-                createdAt: serverTimestamp()
+            await addDoc(collection(db, "friendRequests"), {
+                from: currentUser.uid, to: toUid, status: "pending", users: [currentUser.uid, toUid], createdAt: serverTimestamp()
             });
-            const parent = btnElement.parentElement;
-            parent.innerHTML = `<button onclick="cancelReqFromSearch('${docRef.id}', this)" class="bg-gray-100 text-red-500 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200">Đã gửi (Huỷ)</button>`;
-        } catch (error) {
-            console.error(error);
-            alert("Lỗi gửi lời mời");
-            btnElement.disabled = false;
-            btnElement.innerText = "Kết bạn";
-        }
-    };
-
-    window.cancelReqFromSearch = async (docId, btnElement) => {
-        if(!confirm("Huỷ lời mời kết bạn này?")) return;
-        try {
-            await deleteDoc(doc(db, "friendRequests", docId));
-            const parent = btnElement.parentElement;
-            btnElement.className = "bg-gray-50 text-gray-400 px-4 py-1.5 rounded-lg text-xs font-bold cursor-default";
-            btnElement.innerText = "Đã huỷ";
-            btnElement.onclick = null;
-        } catch (e) { alert("Lỗi xoá"); }
+            // Cập nhật map tạm thời để UX mượt
+            relationshipsMap[toUid] = { type: 'sent', status: 'pending' }; 
+            btn.parentElement.innerHTML = `<span class="text-gray-500 text-xs font-bold">Đã gửi</span>`;
+        } catch(e) { alert("Lỗi"); btn.disabled = false; btn.innerText = "Kết bạn"; }
     };
 
     window.respond = async (docId, accept) => {
@@ -435,11 +361,11 @@
     };
 
     window.cancelReq = async (docId) => {
-        if(confirm("Huỷ lời mời này?")) await deleteDoc(doc(db, "friendRequests", docId));
+        if(confirm("Huỷ yêu cầu?")) await deleteDoc(doc(db, "friendRequests", docId));
     };
 
     window.unfriend = async (docId) => {
-        if(confirm("Huỷ kết bạn với người này?")) await deleteDoc(doc(db, "friendRequests", docId));
+        if(confirm("Huỷ kết bạn?")) await deleteDoc(doc(db, "friendRequests", docId));
     };
   </script>
 </body>
