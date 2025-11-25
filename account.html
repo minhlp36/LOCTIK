@@ -5,25 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Hồ sơ - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); }
+    .modal-backdrop { background-color: rgba(0, 0, 0, 0.8); }
     .safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 20px); }
+    
+    /* Animation cho Modal */
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
   </style>
 </head>
 <body class="bg-white text-slate-900 pb-20">
 
   <header class="sticky top-0 bg-white/95 backdrop-blur-md z-30 flex justify-between items-center px-4 h-12 border-b border-gray-50">
-    <div class="w-8"></div> <div class="flex items-center gap-1">
+    <div class="w-8"></div>
+    <div class="flex items-center gap-1">
         <h1 class="font-bold text-lg" id="headerName">...</h1>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-blue-500 hidden" id="verifiedBadge">
-            <path fill-rule="evenodd" d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75zm-2.546-4.46a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-        </svg>
     </div>
-    
     <button id="menuBtn" class="text-slate-900 p-2 -mr-2">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -31,13 +35,11 @@
     </button>
   </header>
 
-  <div id="settingsMenu" class="fixed inset-0 z-50 hidden transition-opacity duration-200">
+  <div id="settingsMenu" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/20" id="closeMenuOverlay"></div>
-    <div class="absolute right-4 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-[fadeIn_0.2s_ease-out]">
-        <button id="logoutBtn" class="w-full text-left px-4 py-3.5 text-red-500 font-medium hover:bg-red-50 flex items-center gap-3 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-            </svg>
+    <div class="absolute right-4 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+        <button id="logoutBtn" class="w-full text-left px-4 py-3.5 text-red-500 font-medium hover:bg-red-50 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
             Đăng xuất
         </button>
     </div>
@@ -45,53 +47,42 @@
 
   <main class="max-w-md mx-auto pt-4">
     <div class="flex flex-col items-center px-6">
-      <div class="relative mb-4 group">
-        <div class="w-24 h-24 rounded-full p-[3px] border-2 border-gray-100 group-hover:border-gray-300 transition">
-            <img id="userAvatar" src="https://via.placeholder.com/100" class="w-full h-full rounded-full object-cover bg-gray-50" alt="Avatar">
+      <div class="relative mb-3 group">
+        <div class="w-24 h-24 rounded-full p-[3px] border-2 border-gray-100">
+            <img id="userAvatar" src="https://via.placeholder.com/100" class="w-full h-full rounded-full object-cover bg-gray-50">
         </div>
-        <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 rounded-full border-[3px] border-white"></div>
       </div>
 
       <h2 id="userName" class="text-xl font-bold text-slate-900 leading-tight">@username</h2>
       <p id="userBio" class="text-sm text-gray-500 mt-2 text-center max-w-[280px]">Chào mừng đến với trang cá nhân của tôi!</p>
 
-      <div class="flex items-center justify-between w-full px-4 mt-6 mb-6">
-        <div class="flex flex-col items-center flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition">
-          <span class="font-bold text-xl text-slate-900" id="statPosts">-</span>
-          <span class="text-xs text-gray-500 font-medium">Bài viết</span>
+      <div class="flex items-center justify-between w-full px-6 mt-6 mb-6">
+        <div class="flex flex-col items-center flex-1">
+          <span class="font-bold text-lg text-slate-900" id="statPosts">-</span>
+          <span class="text-xs text-gray-500">Bài viết</span>
         </div>
-        <div class="w-[1px] h-8 bg-gray-200"></div>
-        <a href="friends.html" class="flex flex-col items-center flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition">
-          <span class="font-bold text-xl text-slate-900" id="statFriends">-</span>
-          <span class="text-xs text-gray-500 font-medium">Bạn bè</span>
+        <div class="w-[1px] h-6 bg-gray-200"></div>
+        <a href="friends.html" class="flex flex-col items-center flex-1">
+          <span class="font-bold text-lg text-slate-900" id="statFriends">-</span>
+          <span class="text-xs text-gray-500">Bạn bè</span>
         </a>
-        <div class="w-[1px] h-8 bg-gray-200"></div>
-        <div class="flex flex-col items-center flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition">
-          <span class="font-bold text-xl text-slate-900" id="statLikes">-</span>
-          <span class="text-xs text-gray-500 font-medium">Lượt thích</span>
-        </div>
       </div>
 
       <div class="flex gap-2 w-full mb-6">
-        <button class="flex-1 py-2 bg-slate-900 text-white rounded-lg font-semibold text-sm hover:bg-slate-800 transition active:scale-95">Chỉnh sửa hồ sơ</button>
-        <button class="flex-1 py-2 bg-gray-100 text-slate-900 rounded-lg font-semibold text-sm hover:bg-gray-200 transition active:scale-95">Chia sẻ</button>
+        <button class="flex-1 py-2 bg-gray-100 text-slate-900 rounded-lg font-semibold text-sm hover:bg-gray-200 transition">Chỉnh sửa hồ sơ</button>
       </div>
     </div>
 
-    <div class="flex border-b border-gray-200 sticky top-12 bg-white z-20">
-      <div class="flex-1 py-3 flex justify-center cursor-pointer border-b border-black text-slate-900">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-        </svg>
+    <div class="flex border-b border-gray-100 sticky top-12 bg-white z-20">
+      <div class="flex-1 py-3 flex justify-center border-b-2 border-slate-900 cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
       </div>
-      <div class="flex-1 py-3 flex justify-center cursor-pointer text-gray-400 hover:text-gray-600">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-        </svg>
+      <div class="flex-1 py-3 flex justify-center text-gray-300">
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
       </div>
     </div>
 
-    <div class="min-h-[300px] bg-white pb-24">
+    <div class="min-h-[400px] bg-white pb-24">
       <div id="loadingSkeleton" class="grid grid-cols-3 gap-0.5">
         <div class="aspect-square bg-gray-100 animate-pulse"></div>
         <div class="aspect-square bg-gray-100 animate-pulse"></div>
@@ -99,81 +90,89 @@
       </div>
 
       <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-gray-400">
-        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-10 h-10 text-gray-300">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-            </svg>
-        </div>
-        <p class="text-sm font-medium">Chưa có bài viết</p>
-        <a href="upload.html" class="mt-2 text-blue-600 font-bold text-sm">Chia sẻ khoảnh khắc đầu tiên</a>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-12 h-12 mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>
+        <p class="text-sm">Chưa có bài viết</p>
       </div>
       
       <div id="myPosts" class="grid grid-cols-3 gap-0.5"></div>
     </div>
   </main>
 
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-3 pb-safe z-50">
-    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-      </svg>
-    </a>
+  <div id="viewPostModal" class="fixed inset-0 z-40 hidden flex flex-col bg-white">
+      <div class="flex items-center justify-between p-3 border-b border-gray-100 z-10 bg-white">
+          <button id="closeViewBtn" class="p-2 -ml-2 text-slate-900">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+          </button>
+          <span class="font-bold text-sm">Bài viết</span>
+          <button id="optionsBtn" class="p-2 -mr-2 text-slate-900">
+             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+          </button>
+      </div>
 
-    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-        </svg>
+      <div class="flex-1 overflow-y-auto bg-black flex flex-col justify-center relative">
+          <div id="viewMediaContainer" class="w-full flex items-center justify-center min-h-[50vh]">
+              </div>
+      </div>
+
+      <div class="bg-white p-4 border-t border-gray-100 pb-safe">
+          <div class="flex gap-4 mb-3">
+              <button class="hover:text-red-500 transition"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg></button>
+              <button><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" /></svg></button>
+          </div>
+          <div id="viewCaption" class="text-sm text-slate-900 mb-1 font-medium"></div>
+          <div id="viewDate" class="text-xs text-gray-500"></div>
+      </div>
+  </div>
+
+  <div id="optionsModal" class="fixed inset-0 z-50 hidden">
+      <div id="optionsBackdrop" class="absolute inset-0 modal-backdrop transition-opacity"></div>
+      <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 animate-slide-up pb-safe">
+          <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+          
+          <button id="btnEditPost" class="w-full text-left p-4 font-semibold text-slate-800 border-b border-gray-100 flex gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+              Chỉnh sửa bài viết
+          </button>
+          <button id="btnDeletePost" class="w-full text-left p-4 font-semibold text-red-600 flex gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+              Xoá bài viết
+          </button>
+          <button id="cancelOptionsBtn" class="w-full text-center p-3 mt-2 font-medium text-gray-500">Huỷ</button>
+      </div>
+  </div>
+
+  <div id="editModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/50 p-4">
+      <div class="bg-white rounded-xl w-full max-w-sm p-5 animate-fade-in">
+          <h3 class="font-bold text-lg mb-4 text-center">Chỉnh sửa</h3>
+          <textarea id="editInput" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none mb-4"></textarea>
+          <div class="flex gap-2">
+              <button id="cancelEditBtn" class="flex-1 py-2 text-gray-500 font-medium">Huỷ</button>
+              <button id="saveEditBtn" class="flex-1 py-2 bg-slate-900 text-white rounded-lg font-bold">Lưu</button>
+          </div>
+      </div>
+  </div>
+
+  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-3 pb-safe z-30">
+    <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
     </a>
-    
+    <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+    </a>
     <a href="upload.html" class="flex flex-col items-center group -mt-5">
       <div class="relative w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg shadow-black/20 group-hover:scale-105 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
       </div>
     </a>
-
     <a href="chat.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-          </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
     </a>
-
     <a href="account.html" class="flex flex-col items-center text-black transition w-16">
       <div class="w-6 h-6 rounded-full border-2 border-black overflow-hidden p-0.5">
          <img id="myNavAvatar" src="https://via.placeholder.com/30" class="w-full h-full rounded-full object-cover bg-gray-200">
       </div>
     </a>
   </nav>
-
-  <div id="postModal" class="fixed inset-0 z-50 hidden">
-    <div id="modalBackdrop" class="absolute inset-0 modal-backdrop transition-opacity"></div>
-    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 transform transition-transform duration-300 pb-safe">
-        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
-        <h3 class="text-lg font-bold mb-4">Quản lý bài viết</h3>
-        
-        <div class="mb-4">
-            <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Mô tả</label>
-            <textarea id="editCaptionInput" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black resize-none"></textarea>
-        </div>
-
-        <div class="mb-6">
-             <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Quyền riêng tư</label>
-             <select id="editPrivacyInput" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none">
-                 <option value="public">🌍 Công khai</option>
-                 <option value="friends">👥 Bạn bè</option>
-                 <option value="private">🔒 Chỉ mình tôi</option>
-             </select>
-        </div>
-
-        <div class="flex gap-3">
-            <button id="deletePostBtn" class="flex-1 bg-red-50 text-red-600 font-bold py-3.5 rounded-xl hover:bg-red-100 transition">Xoá bài</button>
-            <button id="savePostBtn" class="flex-1 bg-black text-white font-bold py-3.5 rounded-xl hover:bg-gray-800 transition">Lưu</button>
-        </div>
-        <button id="closeModalBtn" class="w-full mt-3 py-3 text-gray-400 font-semibold hover:text-gray-600">Huỷ bỏ</button>
-    </div>
-  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -199,12 +198,8 @@
     const userAvatar = document.getElementById("userAvatar");
     const myNavAvatar = document.getElementById("myNavAvatar");
     const myPosts = document.getElementById("myPosts");
-    
-    // Stats Elements
     const statPosts = document.getElementById("statPosts");
     const statFriends = document.getElementById("statFriends");
-    const statLikes = document.getElementById("statLikes");
-
     const loadingSkeleton = document.getElementById("loadingSkeleton");
     const emptyState = document.getElementById("emptyState");
     const menuBtn = document.getElementById("menuBtn");
@@ -212,17 +207,29 @@
     const closeMenuOverlay = document.getElementById("closeMenuOverlay");
     const logoutBtn = document.getElementById("logoutBtn");
 
-    // Modal Elements
-    const postModal = document.getElementById("postModal");
-    const modalBackdrop = document.getElementById("modalBackdrop");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const savePostBtn = document.getElementById("savePostBtn");
-    const deletePostBtn = document.getElementById("deletePostBtn");
-    const editCaptionInput = document.getElementById("editCaptionInput");
-    const editPrivacyInput = document.getElementById("editPrivacyInput");
+    // Modal View Elements
+    const viewPostModal = document.getElementById("viewPostModal");
+    const viewMediaContainer = document.getElementById("viewMediaContainer");
+    const viewCaption = document.getElementById("viewCaption");
+    const viewDate = document.getElementById("viewDate");
+    const closeViewBtn = document.getElementById("closeViewBtn");
+    const optionsBtn = document.getElementById("optionsBtn");
 
-    let currentPostId = null;
-    let currentPostElement = null;
+    // Modal Options Elements
+    const optionsModal = document.getElementById("optionsModal");
+    const optionsBackdrop = document.getElementById("optionsBackdrop");
+    const cancelOptionsBtn = document.getElementById("cancelOptionsBtn");
+    const btnEditPost = document.getElementById("btnEditPost");
+    const btnDeletePost = document.getElementById("btnDeletePost");
+
+    // Modal Edit Elements
+    const editModal = document.getElementById("editModal");
+    const editInput = document.getElementById("editInput");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const saveEditBtn = document.getElementById("saveEditBtn");
+
+    let activePost = null; // Store current viewed post data
+    let activePostId = null;
 
     // Menu handlers
     menuBtn.addEventListener("click", () => settingsMenu.classList.remove("hidden"));
@@ -236,26 +243,19 @@
         const name = user.displayName || user.email.split('@')[0];
         headerName.textContent = name;
         userName.textContent = name;
-        
         const avatarUrl = user.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.uid}`;
         userAvatar.src = avatarUrl;
         myNavAvatar.src = avatarUrl;
 
-        // Load data song song để nhanh hơn
-        await Promise.all([
-            loadUserPosts(user.uid),
-            countFriends(user.uid)
-        ]);
+        await Promise.all([loadUserPosts(user.uid), countFriends(user.uid)]);
       } else {
         window.location.href = "login.html";
       }
     });
 
-    // 1. Tải bài viết & Tính số like
     async function loadUserPosts(uid) {
       const q = query(collection(db, "posts"), where("uid", "==", uid), orderBy("createdAt", "desc"));
       
-      // Sử dụng onSnapshot để cập nhật realtime nếu có like mới
       onSnapshot(q, (snapshot) => {
           loadingSkeleton.style.display = "none";
           myPosts.innerHTML = "";
@@ -263,119 +263,138 @@
           if (snapshot.empty) {
               emptyState.classList.remove("hidden");
               statPosts.textContent = "0";
-              statLikes.textContent = "0";
               return;
           }
 
           emptyState.classList.add("hidden");
-          statPosts.textContent = snapshot.size; // Cập nhật số bài viết
-
-          let totalLikes = 0;
+          statPosts.textContent = snapshot.size;
 
           snapshot.forEach((docSnap) => {
-              const data = docSnap.data();
-              // Tính tổng like
-              if (data.likes && Array.isArray(data.likes)) {
-                  totalLikes += data.likes.length;
-              }
-              renderPost(docSnap.id, data);
+              renderPostGrid(docSnap.id, docSnap.data());
           });
-
-          statLikes.textContent = formatNumber(totalLikes); // Cập nhật số like
       }, (error) => {
-          console.error("Lỗi tải bài viết:", error);
+          console.error("Lỗi:", error);
           if(error.code === 'failed-precondition') {
-               // Fallback nếu thiếu index
-               alert("Đang tạo chỉ mục dữ liệu, vui lòng đợi giây lát và tải lại trang.");
+               const qSimple = query(collection(db, "posts"), where("uid", "==", uid));
+               getDocs(qSimple).then(snap => {
+                  loadingSkeleton.style.display = "none";
+                  statPosts.textContent = snap.size;
+                  snap.forEach(d => renderPostGrid(d.id, d.data()));
+               });
           }
       });
     }
 
-    // 2. Tính số bạn bè
     async function countFriends(uid) {
         try {
-            const q = query(
-                collection(db, "friendRequests"),
-                where("status", "==", "accepted"),
-                where("users", "array-contains", uid)
-            );
-            // onSnapshot để cập nhật số bạn bè realtime
-            onSnapshot(q, (snapshot) => {
-                statFriends.textContent = snapshot.size;
-            });
-        } catch (e) {
-            console.error("Lỗi đếm bạn bè:", e);
-            statFriends.textContent = "0";
-        }
+            const q = query(collection(db, "friendRequests"), where("status", "==", "accepted"), where("users", "array-contains", uid));
+            const snap = await getDocs(q);
+            document.getElementById("statFriends").textContent = snap.size;
+        } catch(e) { console.log(e); }
     }
 
-    function renderPost(id, post) {
+    // --- RENDER GRID ITEM ---
+    function renderPostGrid(id, post) {
         const div = document.createElement("div");
         div.className = "relative aspect-square bg-gray-100 overflow-hidden cursor-pointer group";
         
-        let thumb = "https://via.placeholder.com/300?text=No+Image";
-        if(post.imageUrls && post.imageUrls.length > 0) thumb = post.imageUrls[0];
+        let content = "";
+        let isVideo = false;
 
-        div.innerHTML = `
-            <img src="${thumb}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            ${post.imageUrls && post.imageUrls.length > 1 ? `
-                <div class="absolute top-2 right-2 bg-black/60 p-1 rounded backdrop-blur-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" class="w-3 h-3 text-white"><path d="M7 21h10a2 2 0 002-2V9H7v10zm12-14h-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10h2v-2h12v4z"/></svg>
-                </div>` : ''}
-        `;
+        // Ưu tiên imageUrls array, sau đó đến url (legacy)
+        const mediaUrl = (post.imageUrls && post.imageUrls.length > 0) ? post.imageUrls[0] : post.url;
+
+        if (mediaUrl) {
+            isVideo = mediaUrl.includes(".mp4") || mediaUrl.includes("video");
+            if(isVideo) {
+                 content = `
+                    <video src="${mediaUrl}#t=0.1" class="w-full h-full object-cover"></video>
+                    <div class="absolute top-2 right-2 text-white drop-shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" /></svg>
+                    </div>`;
+            } else {
+                 content = `<img src="${mediaUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">`;
+            }
+        } else {
+            // Text only post
+            content = `<div class="w-full h-full bg-slate-100 flex items-center justify-center p-2 text-xs text-center text-gray-500 break-words">${post.text?.substring(0,30)}...</div>`;
+        }
+
+        div.innerHTML = content + `<div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>`;
         
-        div.onclick = () => openModal(id, post, div);
+        div.onclick = () => openViewModal(id, post);
         myPosts.appendChild(div);
     }
 
-    function formatNumber(num) {
-        if(num >= 1000) return (num/1000).toFixed(1) + 'k';
-        return num;
+    // --- VIEW MODAL LOGIC (Logic Mới) ---
+    function openViewModal(id, post) {
+        activePostId = id;
+        activePost = post;
+
+        // 1. Reset & Show Modal
+        viewPostModal.classList.remove("hidden");
+        viewCaption.textContent = post.text || "";
+        
+        // Format Date
+        const date = post.createdAt?.toDate ? post.createdAt.toDate() : new Date();
+        viewDate.textContent = date.toLocaleDateString("vi-VN") + " lúc " + date.toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'});
+
+        // 2. Render Media Full Size
+        const mediaUrl = (post.imageUrls && post.imageUrls.length > 0) ? post.imageUrls[0] : post.url;
+        
+        if (mediaUrl) {
+             const isVideo = mediaUrl.includes(".mp4") || mediaUrl.includes("video");
+             if(isVideo) {
+                 viewMediaContainer.innerHTML = `<video src="${mediaUrl}" controls autoplay class="max-w-full max-h-[70vh] object-contain"></video>`;
+             } else {
+                 viewMediaContainer.innerHTML = `<img src="${mediaUrl}" class="max-w-full max-h-[70vh] object-contain">`;
+             }
+        } else {
+             viewMediaContainer.innerHTML = `<div class="p-10 text-center text-white font-medium text-lg">${post.text}</div>`;
+        }
     }
 
-    // --- Modal Logic ---
-    function openModal(id, post, element) {
-        currentPostId = id;
-        currentPostElement = element;
-        editCaptionInput.value = post.text || "";
-        editPrivacyInput.value = post.privacy || "public";
-        postModal.classList.remove("hidden");
-    }
-
-    function closeModal() {
-        postModal.classList.add("hidden");
-        currentPostId = null;
-    }
-
-    modalBackdrop.onclick = closeModal;
-    closeModalBtn.onclick = closeModal;
-
-    savePostBtn.onclick = async () => {
-        if(!currentPostId) return;
-        savePostBtn.textContent = "...";
-        try {
-            await updateDoc(doc(db, "posts", currentPostId), {
-                text: editCaptionInput.value,
-                privacy: editPrivacyInput.value
-            });
-            alert("Đã cập nhật!");
-            closeModal();
-        } catch(e) { alert("Lỗi: " + e.message); }
-        savePostBtn.textContent = "Lưu";
+    closeViewBtn.onclick = () => {
+        viewPostModal.classList.add("hidden");
+        viewMediaContainer.innerHTML = ""; // Stop video playing
     };
 
-    deletePostBtn.onclick = async () => {
-        if(!currentPostId || !confirm("Xoá bài viết này?")) return;
-        deletePostBtn.textContent = "...";
+    // --- OPTIONS MODAL (Edit/Delete) ---
+    optionsBtn.onclick = () => optionsModal.classList.remove("hidden");
+    const closeOptions = () => optionsModal.classList.add("hidden");
+    optionsBackdrop.onclick = closeOptions;
+    cancelOptionsBtn.onclick = closeOptions;
+
+    // --- DELETE LOGIC ---
+    btnDeletePost.onclick = async () => {
+        if(!confirm("Xoá bài viết này?")) return;
         try {
-            await deleteDoc(doc(db, "posts", currentPostId));
-            currentPostElement.remove();
-            if(myPosts.children.length === 0) emptyState.classList.remove("hidden");
-            closeModal();
+            await deleteDoc(doc(db, "posts", activePostId));
+            closeOptions();
+            closeViewBtn.click(); // Close View Modal
         } catch(e) { alert("Lỗi: " + e.message); }
-        deletePostBtn.textContent = "Xoá bài";
     };
+
+    // --- EDIT LOGIC ---
+    btnEditPost.onclick = () => {
+        closeOptions();
+        editModal.classList.remove("hidden");
+        editInput.value = activePost.text || "";
+    };
+
+    cancelEditBtn.onclick = () => editModal.classList.add("hidden");
+    
+    saveEditBtn.onclick = async () => {
+        saveEditBtn.textContent = "...";
+        try {
+            await updateDoc(doc(db, "posts", activePostId), { text: editInput.value });
+            // Update UI locally
+            viewCaption.textContent = editInput.value;
+            editModal.classList.add("hidden");
+        } catch(e) { alert("Lỗi: " + e.message); }
+        saveEditBtn.textContent = "Lưu";
+    };
+
   </script>
 </body>
 </html>
