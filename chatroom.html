@@ -6,19 +6,28 @@
   <title>Trò chuyện - LokTik</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Ẩn thanh cuộn */
+    /* 1. Fix chiều cao cho mobile */
+    body { height: 100dvh; } 
+
+    /* 2. Ẩn thanh cuộn */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    /* Bong bóng chat */
+    
+    /* 3. Bong bóng chat */
     .msg-own { border-bottom-right-radius: 4px; }
     .msg-friend { border-bottom-left-radius: 4px; }
-    /* Vùng an toàn cho iOS */
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+    
+    /* 4. Hiệu ứng */
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-msg { animation: fadeUp 0.3s ease-out forwards; }
   </style>
 </head>
-<body class="bg-white flex flex-col h-screen fixed inset-0">
+<body class="bg-white flex flex-col overflow-hidden text-slate-900">
 
-  <header class="bg-white border-b border-gray-100 p-3 flex items-center gap-3 z-10 shrink-0 shadow-sm">
+  <header class="bg-white border-b border-gray-100 p-3 flex items-center gap-3 shrink-0 z-20 shadow-sm">
     <a href="chat.html" class="p-2 -ml-2 text-gray-800 hover:bg-gray-100 rounded-full transition">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -31,40 +40,43 @@
             <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
         <div>
-            <h1 id="friendName" class="font-bold text-slate-900 leading-tight">Đang tải...</h1>
-            <p class="text-xs text-gray-500 flex items-center gap-1">
-                <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full"></span> Đang hoạt động
-            </p>
+            <h1 id="friendName" class="font-bold leading-tight text-sm">Người dùng</h1>
+            <p class="text-[10px] text-green-600 font-medium">Đang hoạt động</p>
         </div>
     </div>
   </header>
 
-  <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 bg-white scroll-smooth pb-24">
+  <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 scroll-smooth">
     <div id="loadingMsg" class="flex justify-center mt-10">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
     </div>
-    </div>
+  </div>
 
-  <div class="bg-white border-t border-gray-100 p-3 pb-safe shrink-0 absolute bottom-0 w-full z-20">
+  <div class="bg-white border-t border-gray-100 p-3 shrink-0 z-20 w-full">
     <form id="chatForm" class="flex items-end gap-2 max-w-md mx-auto">
         <button type="button" class="p-2 text-gray-400 hover:text-blue-500 transition">
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 6v12.25c0 1.243 1.057 2.25 2.25 2.25zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 6v12.25c0 1.243 1.057 2.25 2.25 2.25zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
         </button>
 
         <div class="flex-1 bg-gray-100 rounded-3xl flex items-center px-4 py-2 focus-within:ring-2 focus-within:ring-blue-100 transition">
-            <input type="text" id="messageInput" autocomplete="off" placeholder="Nhắn tin..." class="w-full bg-transparent outline-none text-slate-900 placeholder-gray-500 py-1" required />
+            <input type="text" id="messageInput" autocomplete="off" placeholder="Nhắn tin..." class="w-full bg-transparent outline-none text-slate-900 placeholder-gray-500 py-1 text-sm" required />
         </div>
 
         <button type="submit" class="p-3 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 ml-0.5"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 ml-0.5">
+                <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+            </svg>
         </button>
     </form>
   </div>
 
   <script type="module">
+    // Thêm import writeBatch để cập nhật nhiều tin cùng lúc
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAJxH_3ZkN7wQnXVelRzm0mezBCBcxKoJM",
@@ -79,25 +91,20 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // DOM Elements
     const messagesContainer = document.getElementById("messagesContainer");
     const messageInput = document.getElementById("messageInput");
     const chatForm = document.getElementById("chatForm");
     const loadingMsg = document.getElementById("loadingMsg");
 
-    // Lấy ID phòng chat và tên bạn từ URL
     const params = new URLSearchParams(window.location.search);
     const chatId = params.get("id");
     const friendNameParam = params.get("friendName");
-
-    console.log("Chat ID hiện tại:", chatId); // KIỂM TRA: Mở F12 xem có ID này không
 
     if (!chatId) {
       alert("Lỗi: Không tìm thấy ID phòng chat!");
       window.location.href = "chat.html";
     }
 
-    // Cập nhật Header
     if (friendNameParam) {
         document.getElementById("friendName").textContent = decodeURIComponent(friendNameParam);
         document.getElementById("friendAvatar").src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${friendNameParam}`;
@@ -111,78 +118,175 @@
       listenMessages();
     });
 
-    // --- 1. Lắng nghe tin nhắn (Đã tối ưu) ---
+    // --- HELPER 1: Xử lý thời gian ---
+    function formatTime(timestamp) {
+        if (!timestamp) return "";
+        const date = timestamp.toDate();
+        return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    // --- HELPER 2: Xử lý trạng thái (Chỉ hiển thị cho mình) ---
+    function getStatusText(status, isPending) {
+        if (isPending) return "Đang gửi...";
+        if (status === 'seen') return "Đã xem";
+        return "Đã nhận"; // Mặc định là sent (đã lên server)
+    }
+
+    // --- HELPER 3: Đánh dấu Đã Xem ---
+    async function markAsSeen(snapshot) {
+        // Tìm các tin nhắn KHÔNG phải của mình và trạng thái KHÁC 'seen'
+        const batch = writeBatch(db);
+        let hasUpdates = false;
+
+        snapshot.docs.forEach((doc) => {
+            const data = doc.data();
+            if (data.sender !== currentUser.uid && data.status !== 'seen') {
+                batch.update(doc.ref, { status: 'seen' });
+                hasUpdates = true;
+            }
+        });
+
+        if (hasUpdates) {
+            try {
+                await batch.commit();
+                console.log("Đã đánh dấu đã xem.");
+            } catch (err) {
+                console.error("Lỗi update status:", err);
+            }
+        }
+    }
+
+    // --- 1. Lắng nghe tin nhắn ---
+    
     function listenMessages() {
       const q = query(
         collection(db, "chats", chatId, "messages"),
         orderBy("createdAt", "asc")
       );
 
-      // docChanges giúp chỉ xử lý tin nhắn MỚI thêm vào, không vẽ lại toàn bộ
       onSnapshot(q, (snapshot) => {
         loadingMsg.style.display = "none";
         
+        // A. Render tin nhắn ra màn hình
         snapshot.docChanges().forEach((change) => {
+            const msg = change.doc.data();
+            const isMine = msg.sender === currentUser.uid;
+            const isPending = snapshot.metadata.hasPendingWrites; // Đang gửi hay chưa?
+
             if (change.type === "added") {
-                const msg = change.doc.data();
-                const isMine = msg.sender === currentUser.uid;
-                renderMessage(msg.text, isMine);
-                scrollToBottom();
+                renderMessage(msg, isMine, change.doc.id, isPending);
+            }
+            if (change.type === "modified") {
+                // Nếu trạng thái thay đổi (ví dụ người kia đã xem), cập nhật lại giao diện
+                updateMessageStatus(change.doc.id, msg, isMine, isPending);
             }
         });
+
+        // B. Tự động đánh dấu đã xem (nếu mình là người nhận)
+        markAsSeen(snapshot);
+
+        // C. Cuộn xuống nếu có tin mới
+        if (snapshot.docChanges().some(c => c.type === 'added')) {
+            scrollToBottom();
+        }
+
       }, (error) => {
-          console.error("Lỗi đọc tin nhắn:", error);
-          // Nếu lỗi này hiện ra, 99% là do chưa chỉnh Firebase Rules
-          if (error.code === 'permission-denied') {
-              alert("Lỗi quyền truy cập: Bạn chưa cấu hình Firebase Rules.");
-          }
+          console.error("Lỗi:", error);
       });
     }
 
-    // --- 2. Vẽ tin nhắn ---
-    function renderMessage(text, isMine) {
+    // --- 2. Render Tin nhắn (HTML) ---
+    function renderMessage(msg, isMine, docId, isPending) {
         const divWrapper = document.createElement("div");
-        divWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"} animate-fade-in-up`;
+        divWrapper.className = `flex w-full ${isMine ? "justify-end" : "justify-start"} animate-msg mb-2`;
+        divWrapper.id = `msg-${docId}`;
 
-        const divBubble = document.createElement("div");
-        if (isMine) {
-            divBubble.className = "msg-own bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[75%] break-words shadow-sm text-[15px]";
-        } else {
-            divBubble.className = "msg-friend bg-gray-100 text-slate-800 px-4 py-2 rounded-2xl rounded-tl-sm max-w-[75%] break-words text-[15px]";
-        }
+        const timeString = formatTime(msg.createdAt);
         
-        divBubble.textContent = text;
-        divWrapper.appendChild(divBubble);
+        // Logic hiển thị trạng thái (Chỉ hiện cho tin nhắn của mình)
+        let statusHtml = "";
+        if (isMine) {
+            const statusText = getStatusText(msg.status, isPending);
+            const statusColor = msg.status === 'seen' ? 'text-blue-500 font-bold' : 'text-gray-400';
+            statusHtml = `<span class="status-label text-[10px] ${statusColor} ml-1">${statusText}</span>`;
+        }
+
+        const bubbleClass = isMine 
+            ? "msg-own bg-blue-600 text-white rounded-2xl rounded-tr-sm" 
+            : "msg-friend bg-white border border-gray-100 text-slate-800 rounded-2xl rounded-tl-sm shadow-sm";
+
+        divWrapper.innerHTML = `
+            <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-[75%]">
+                <div class="${bubbleClass} px-4 py-2 break-words text-[15px]">
+                    ${msg.text}
+                </div>
+                <div class="flex items-center mt-1 px-1">
+                    <span class="text-[10px] text-gray-400 time-display">${timeString}</span>
+                    ${statusHtml}
+                </div>
+            </div>
+        `;
+        
         messagesContainer.appendChild(divWrapper);
     }
 
-    // --- 3. Gửi tin nhắn ---
+    // --- 3. Cập nhật trạng thái tin nhắn (Không vẽ lại cả tin) ---
+    function updateMessageStatus(docId, msg, isMine, isPending) {
+        const wrapper = document.getElementById(`msg-${docId}`);
+        if (!wrapper) return;
+
+        // Cập nhật giờ (nếu chuyển từ đang gửi -> đã gửi)
+        const timeEl = wrapper.querySelector('.time-display');
+        if (timeEl) timeEl.textContent = formatTime(msg.createdAt);
+
+        // Cập nhật text trạng thái (Đã nhận -> Đã xem)
+        if (isMine) {
+            const statusLabel = wrapper.querySelector('.status-label');
+            if (statusLabel) {
+                const statusText = getStatusText(msg.status, isPending);
+                statusLabel.textContent = statusText;
+
+                // Đổi màu
+                if (msg.status === 'seen') {
+                    statusLabel.className = "status-label text-[10px] text-blue-500 font-bold ml-1";
+                } else {
+                    statusLabel.className = "status-label text-[10px] text-gray-400 ml-1";
+                }
+            }
+        }
+    }
+
+    // --- 4. Gửi tin nhắn ---
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = messageInput.value.trim();
       if (!text) return;
 
       const oldText = text;
-      messageInput.value = ""; // Xóa input ngay lập tức
+      messageInput.value = "";
       messageInput.focus();
 
       try {
         await addDoc(collection(db, "chats", chatId, "messages"), {
             text: oldText,
             sender: currentUser.uid,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            status: "sent" // Mặc định là đã gửi
         });
-        // Không cần gọi renderMessage hay scrollToBottom ở đây
-        // Vì onSnapshot sẽ tự động bắt sự kiện đó và vẽ ra
       } catch (err) {
         console.error("Lỗi gửi tin:", err);
-        alert("Không gửi được tin nhắn: " + err.message);
-        messageInput.value = oldText; // Trả lại tin nhắn nếu lỗi
+        alert("Lỗi: " + err.message);
+        messageInput.value = oldText;
       }
     });
 
     function scrollToBottom() {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        setTimeout(() => {
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
   </script>
 </body>
