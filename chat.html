@@ -157,7 +157,7 @@
       listenToRequests();
     });
 
-    // 1. Lắng nghe danh sách bạn bè (Real-time)
+    // 1. Lắng nghe danh sách bạn bè (Real-time) - ĐÃ SỬA LỖI & TỐI ƯU
     function listenToFriends() {
       const q = query(
         collection(db, "friendRequests"),
@@ -168,7 +168,6 @@
       // onSnapshot tự động chạy lại khi dữ liệu thay đổi
       onSnapshot(q, async (snapshot) => {
         const listEl = document.getElementById("friendsList");
-        listEl.innerHTML = "";
 
         if (snapshot.empty) {
             listEl.innerHTML = `<div class="text-center py-10 text-gray-400">
@@ -179,22 +178,39 @@
             return;
         }
 
-        // Cần lấy info user của từng người bạn
-        for (const docSnap of snapshot.docs) {
-          const data = docSnap.data();
-          const otherUID = data.users.find(uid => uid !== currentUser.uid);
-          
-          // Lấy thông tin người kia
-          const userSnap = await getDoc(doc(db, "users", otherUID));
-          if(!userSnap.exists()) continue;
+        // Tải dữ liệu song song (nhanh hơn)
+        const promises = snapshot.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            const otherUID = data.users.find(uid => uid !== currentUser.uid);
+            
+            // Lấy thông tin user
+            const userSnap = await getDoc(doc(db, "users", otherUID));
+            if (!userSnap.exists()) return null;
 
-          const friend = userSnap.data();
-          const avatar = friend.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${otherUID}`;
+            return {
+                chatId: docSnap.id, // Dùng ID này làm ID phòng chat
+                friend: userSnap.data(),
+                friendUid: otherUID
+            };
+        });
+
+        // Chờ tất cả dữ liệu tải xong
+        const results = await Promise.all(promises);
+
+        listEl.innerHTML = ""; // Xóa nội dung cũ
+
+        results.forEach(item => {
+          if (!item) return;
+
+          const { chatId, friend, friendUid } = item;
+          const avatar = friend.photoURL || `https://api.dicebear.com/9.x/avataaars/svg?seed=${friendUid}`;
           const name = friend.displayName || friend.email.split('@')[0];
 
-          const item = document.createElement("div");
-          item.innerHTML = `
-            <a href="chat-room.html?id=${docSnap.id}&friendName=${encodeURIComponent(name)}" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition cursor-pointer">
+          const div = document.createElement("div");
+          
+          // --- QUAN TRỌNG: Đã sửa thành chatroom.html ---
+          div.innerHTML = `
+            <a href="chatroom.html?id=${chatId}&friendName=${encodeURIComponent(name)}" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition cursor-pointer">
               <div class="relative">
                 <img src="${avatar}" class="w-12 h-12 rounded-full object-cover border border-gray-100" />
                 <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -208,8 +224,8 @@
               </div>
             </a>
           `;
-          listEl.appendChild(item);
-        }
+          listEl.appendChild(div);
+        });
       });
     }
 
@@ -287,7 +303,7 @@
       }
     };
 
-    // 3. Tìm kiếm người dùng (Đã sửa lỗi cú pháp getDocs)
+    // 3. Tìm kiếm người dùng
     window.searchUser = async () => {
       const email = document.getElementById("searchInput").value.trim();
       const resultEl = document.getElementById("searchResult");
