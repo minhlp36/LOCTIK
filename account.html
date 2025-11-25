@@ -23,7 +23,7 @@
 </head>
 <body class="bg-white text-slate-900 pb-20">
 
-  <header class="sticky top-0 bg-white/95 backdrop-blur-md z-30 flex justify-between items-center px-4 h-12 border-b border-gray-50">
+  <header class="sticky top-0 bg-white/95 backdrop-blur-md z-30 flex justify-between items-center px-4 h-14 border-b border-gray-50 transition-all">
     <div class="w-8"></div>
     <div class="flex items-center gap-1">
         <h1 class="font-bold text-lg" id="headerName">...</h1>
@@ -57,12 +57,12 @@
       <p id="userBio" class="text-sm text-gray-500 mt-2 text-center max-w-[280px]">Chào mừng đến với trang cá nhân của tôi!</p>
 
       <div class="flex items-center justify-between w-full px-6 mt-6 mb-6">
-        <div class="flex flex-col items-center flex-1">
+        <div class="flex flex-col items-center flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition">
           <span class="font-bold text-lg text-slate-900" id="statPosts">-</span>
           <span class="text-xs text-gray-500">Bài viết</span>
         </div>
         <div class="w-[1px] h-6 bg-gray-200"></div>
-        <a href="friends.html" class="flex flex-col items-center flex-1">
+        <a href="friends.html" class="flex flex-col items-center flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition">
           <span class="font-bold text-lg text-slate-900" id="statFriends">-</span>
           <span class="text-xs text-gray-500">Bạn bè</span>
         </a>
@@ -73,11 +73,11 @@
       </div>
     </div>
 
-    <div class="flex border-b border-gray-100 sticky top-12 bg-white z-20">
-      <div class="flex-1 py-3 flex justify-center border-b-2 border-slate-900 cursor-pointer">
+    <div class="flex border-b border-gray-100 sticky top-14 bg-white z-20">
+      <div class="flex-1 py-3 flex justify-center border-b-2 border-slate-900 cursor-pointer text-slate-900">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
       </div>
-      <div class="flex-1 py-3 flex justify-center text-gray-300">
+      <div class="flex-1 py-3 flex justify-center text-gray-300 hover:text-gray-500 cursor-pointer transition">
          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
       </div>
     </div>
@@ -98,7 +98,7 @@
     </div>
   </main>
 
-  <div id="viewPostModal" class="fixed inset-0 z-40 hidden flex flex-col bg-white">
+  <div id="viewPostModal" class="fixed inset-0 z-50 hidden flex flex-col bg-white">
       <div class="flex items-center justify-between p-3 border-b border-gray-100 z-10 bg-white">
           <button id="closeViewBtn" class="p-2 -ml-2 text-slate-900">
              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
@@ -124,7 +124,7 @@
       </div>
   </div>
 
-  <div id="optionsModal" class="fixed inset-0 z-50 hidden">
+  <div id="optionsModal" class="fixed inset-0 z-[60] hidden">
       <div id="optionsBackdrop" class="absolute inset-0 modal-backdrop transition-opacity"></div>
       <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 animate-slide-up pb-safe">
           <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
@@ -141,7 +141,7 @@
       </div>
   </div>
 
-  <div id="editModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/50 p-4">
+  <div id="editModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center bg-black/50 p-4">
       <div class="bg-white rounded-xl w-full max-w-sm p-5 animate-fade-in">
           <h3 class="font-bold text-lg mb-4 text-center">Chỉnh sửa</h3>
           <textarea id="editInput" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:outline-none mb-4"></textarea>
@@ -152,15 +152,15 @@
       </div>
   </div>
 
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-3 pb-safe z-30">
+  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 flex justify-around items-center py-3 pb-safe z-40">
     <a href="feed.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
     </a>
     <a href="friends.html" class="flex flex-col items-center text-gray-400 hover:text-black transition group w-16">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
     </a>
-    <a href="upload.html" class="flex flex-col items-center group -mt-5">
-      <div class="relative w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg shadow-black/20 group-hover:scale-105 transition">
+    <a href="upload.html" class="flex flex-col items-center group -mt-6">
+      <div class="w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg shadow-black/20 hover:scale-105 transition border-2 border-white">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
       </div>
     </a>
@@ -168,7 +168,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:scale-110 transition"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
     </a>
     <a href="account.html" class="flex flex-col items-center text-black transition w-16">
-      <div class="w-6 h-6 rounded-full border-2 border-black overflow-hidden p-0.5">
+      <div class="w-7 h-7 rounded-full border-2 border-black overflow-hidden p-0.5">
          <img id="myNavAvatar" src="https://via.placeholder.com/30" class="w-full h-full rounded-full object-cover bg-gray-200">
       </div>
     </a>
@@ -228,7 +228,7 @@
     const cancelEditBtn = document.getElementById("cancelEditBtn");
     const saveEditBtn = document.getElementById("saveEditBtn");
 
-    let activePost = null; // Store current viewed post data
+    let activePost = null; 
     let activePostId = null;
 
     // Menu handlers
@@ -301,7 +301,6 @@
         let content = "";
         let isVideo = false;
 
-        // Ưu tiên imageUrls array, sau đó đến url (legacy)
         const mediaUrl = (post.imageUrls && post.imageUrls.length > 0) ? post.imageUrls[0] : post.url;
 
         if (mediaUrl) {
@@ -316,7 +315,6 @@
                  content = `<img src="${mediaUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">`;
             }
         } else {
-            // Text only post
             content = `<div class="w-full h-full bg-slate-100 flex items-center justify-center p-2 text-xs text-center text-gray-500 break-words">${post.text?.substring(0,30)}...</div>`;
         }
 
@@ -326,20 +324,17 @@
         myPosts.appendChild(div);
     }
 
-    // --- VIEW MODAL LOGIC (Logic Mới) ---
+    // --- VIEW MODAL LOGIC ---
     function openViewModal(id, post) {
         activePostId = id;
         activePost = post;
 
-        // 1. Reset & Show Modal
         viewPostModal.classList.remove("hidden");
         viewCaption.textContent = post.text || "";
         
-        // Format Date
         const date = post.createdAt?.toDate ? post.createdAt.toDate() : new Date();
         viewDate.textContent = date.toLocaleDateString("vi-VN") + " lúc " + date.toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'});
 
-        // 2. Render Media Full Size
         const mediaUrl = (post.imageUrls && post.imageUrls.length > 0) ? post.imageUrls[0] : post.url;
         
         if (mediaUrl) {
@@ -356,26 +351,23 @@
 
     closeViewBtn.onclick = () => {
         viewPostModal.classList.add("hidden");
-        viewMediaContainer.innerHTML = ""; // Stop video playing
+        viewMediaContainer.innerHTML = ""; 
     };
 
-    // --- OPTIONS MODAL (Edit/Delete) ---
     optionsBtn.onclick = () => optionsModal.classList.remove("hidden");
     const closeOptions = () => optionsModal.classList.add("hidden");
     optionsBackdrop.onclick = closeOptions;
     cancelOptionsBtn.onclick = closeOptions;
 
-    // --- DELETE LOGIC ---
     btnDeletePost.onclick = async () => {
         if(!confirm("Xoá bài viết này?")) return;
         try {
             await deleteDoc(doc(db, "posts", activePostId));
             closeOptions();
-            closeViewBtn.click(); // Close View Modal
+            closeViewBtn.click(); 
         } catch(e) { alert("Lỗi: " + e.message); }
     };
 
-    // --- EDIT LOGIC ---
     btnEditPost.onclick = () => {
         closeOptions();
         editModal.classList.remove("hidden");
@@ -388,7 +380,6 @@
         saveEditBtn.textContent = "...";
         try {
             await updateDoc(doc(db, "posts", activePostId), { text: editInput.value });
-            // Update UI locally
             viewCaption.textContent = editInput.value;
             editModal.classList.add("hidden");
         } catch(e) { alert("Lỗi: " + e.message); }
